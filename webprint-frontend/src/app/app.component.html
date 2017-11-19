@@ -1,11 +1,21 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{title}}!
-  </h1>
-</div>
-<div>
-<app-draganddrop></app-draganddrop>
-<app-joblist></app-joblist>
-<app-jobactivity></app-jobactivity>
+<nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">{{ title }}</a>
+    </div>
+
+    <ul class="nav navbar-nav">
+      <li class="active"><a href="#!/overview">Overview</a></li>
+      <li><a href="#!/new">New</a></li>
+      <li><a href="#!/active">Active</a></li>
+      <li><a href="#!/list">Job list</a></li>
+
+    </ul>
+</nav>
+
+<div class="container-fluid">
+  <div class="container">
+    <app-joblist></app-joblist>
+    <app-jobactivity></app-jobactivity>
+  </div>
+
 </div>
