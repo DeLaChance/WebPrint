@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs/Rx'
+import { FileDropModule, UploadFile, UploadEvent } from 'ngx-file-drop';
 
 import { PrintingJob } from './printing-job'
 
@@ -32,5 +33,12 @@ export class RestService {
         }
     ];
     return Observable.of(mockData);
+  }
+
+  postPrintingJob(file: UploadFile) {
+    const formData = new FormData();
+    formData.append("file", file.fileEntry);
+    console.log("sending form " + formData);
+    this.http.post('/api/jobs', formData);
   }
 }

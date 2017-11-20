@@ -1,3 +1,31 @@
-<p>
-  draganddrop works!
-</p>
+<div class="container">
+  <div class="center">
+    <form action="/api/file" method="post" enctype="multipart/form-data">
+      <div class="form-group">
+        <file-drop headertext="Drop files here" (onFileDrop)="dropped($event)"
+        (onFileOver)="fileOver($event)" (onFileLeave)="fileLeave($event)">
+        </file-drop>
+        <div class="upload-table">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Size (kB)</th>
+                        <th>Last modified date</th>
+                    </tr>
+                </thead>
+                <tbody class="upload-name-style">
+                    <tr *ngFor="let item of files; let i=index">
+                        <td><strong>{{ item.relativePath }}</strong></td>
+                        <td>{{ item.size }}</td>
+                        <td>{{ item.lastModifiedDate }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" type="submit" (click)="uploadFiles()">Upload files</button>
+    </form>
+  </div>
+</div>
