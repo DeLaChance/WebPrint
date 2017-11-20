@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+
 import { PrintingJob } from '../printing-job';
+import { RestService } from '../rest.service';
 
 @Component({
   selector: 'app-joblist',
@@ -12,19 +14,16 @@ export class JoblistComponent implements OnInit {
   printingJobs: PrintingJob[];
 
   // Methods
-  constructor() {
-    this.printingJobs = [
-      {
-        id: "1",
-        name: "name",
-        created: new Date(),
-        completed: new Date()
-      }
-    ];
-
+  constructor(private restService: RestService) {
   }
 
   ngOnInit() {
+    this.restService.fetchPrintingJobs().subscribe(data => this.setPrintingJobs(data));
+  }
+
+  setPrintingJobs(printingJobs: PrintingJob[]) {
+    this.printingJobs = printingJobs;
+    console.log("updated printingJobs " + printingJobs.length);
   }
 
 }

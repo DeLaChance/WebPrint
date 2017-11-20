@@ -14,7 +14,7 @@ export class PrintingJob {
     };
   }
 
-  static decode(printingJobJson: any) {
+  static decode(printingJobJson: any): PrintingJob {
     return {
       id: printingJobJson.id,
       name: printingJobJson.name,
