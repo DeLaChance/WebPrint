@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { PrintingJob } from '../printing-job';
 
 @Component({
   selector: 'app-joblist',
@@ -20,6 +21,7 @@ export class JoblistComponent implements OnInit {
         completed: new Date()
       }
     ];
+
   }
 
   ngOnInit() {

@@ -1,37 +1,11 @@
 export class PrintingJob {
 
-  private id: string;
-  private created: Date;
-  private completed: Date;
-  private name: string;
+  id: string;
+  name: string;
+  created: Date;
+  completed: Date;
 
-  constructor(id: string,
-    created: Date,
-    completed: Date,
-    name: string) {
-      this.id = id;
-      this.created = created;
-      this.completed = completed;
-      this.name = name;
-  }
-
-  getId(): string {
-    return this.id;
-  }
-
-  getName(): string {
-    return this.name;
-  }
-
-  getCreated(): Date {
-    return this.created;
-  }
-
-  getCompleted(): Date {
-    return this.completed;
-  }
-
-  encode(printingJob: PrintingJob): Any {
+  static encode(printingJob: PrintingJob): any {
     return {
       name: printingJob.name,
       id: printingJob.id,
@@ -40,7 +14,7 @@ export class PrintingJob {
     };
   }
 
-  decode(printingJobJson: Any) {
+  static decode(printingJobJson: any) {
     return {
       id: printingJobJson.id,
       name: printingJobJson.name,
@@ -48,5 +22,4 @@ export class PrintingJob {
       completed: new Date(printingJobJson.completed)
     };
   }
-
 }
