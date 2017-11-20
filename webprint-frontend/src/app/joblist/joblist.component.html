@@ -1,3 +1,18 @@
-<p>
-  joblist works!
-</p>
+<table datatable class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Document</th>
+      <th scope="col">Issued (yyyy-MM-dd)</th>
+      <th scope="col">Completed (yyyy-MM-dd)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let job of printingJobs; let i=index;">
+      <th scope="row">{{ i }}</th>
+      <td>{{ job.name }}</td>
+      <td>{{ job.created | date:'yyyy-MM-dd'}}</td>
+      <td>{{ job.completed | date:'yyyy-MM-dd' }}</td>
+    </tr>
+  </tbody>
+</table>

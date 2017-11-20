@@ -7,7 +7,20 @@ import { Component, OnInit } from '@angular/core';
 })
 export class JoblistComponent implements OnInit {
 
-  constructor() { }
+  // Variables
+  printingJobs: PrintingJob[];
+
+  // Methods
+  constructor() {
+    this.printingJobs = [
+      {
+        id: "1",
+        name: "name",
+        created: new Date(),
+        completed: new Date()
+      }
+    ];
+  }
 
   ngOnInit() {
   }
