@@ -3,7 +3,7 @@ package nl.webprint.server;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.Router;
 
 public class ServerVerticle extends AbstractVerticle {
 
@@ -17,17 +17,9 @@ public class ServerVerticle extends AbstractVerticle {
 		final HttpServer httpServer = this.vertx.createHttpServer(options);
 		final int portNumber = 8081;
 		
-		httpServer.requestHandler(request -> {
+		final Router router = RouterGenerator.generate(this.vertx);
 		
-		  // This handler gets called for each request that arrives on the server
-		  HttpServerResponse response = request.response();
-		  response.putHeader("content-type", "text/plain");
-		
-		  // Write to the response and end it
-		  response.end("Hello World!");
-		});
-		
-		httpServer.listen(8081);
+		httpServer.requestHandler(router::accept).listen(portNumber);
 	}
 
 	@Override
