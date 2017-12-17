@@ -11,6 +11,11 @@ Technologies:
 5. Sqlite
 6. Liquibase
 
+### How to run ###
+
+`mvn clean install`
+`vertx run nl.webprint.server.ServerVerticle -cp target/webprint-backend-0.0.1-SNAPSHOT.jar` # Run the ServerVerticle
+
 ### Architecture ###
 The front-end running in a browser can do the following:
 
