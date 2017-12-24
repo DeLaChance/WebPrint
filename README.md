@@ -4,7 +4,7 @@ WebPrint is a website that can be used to print files. A user can drag and drop 
 The project should be deployable on any device (or at the very least any Linux environment) by invoking a single script.
 
 Technologies:
-1. Vertex toolkit
+1. Vertx toolkit
 2. Angular 4 
 3. Docker 
 4. CUPS 
