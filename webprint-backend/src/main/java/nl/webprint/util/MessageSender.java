@@ -1,7 +1,8 @@
-package nl.webprint.verticle.server;
+package nl.webprint.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import nl.webprint.messaging.Config;
 import nl.webprint.messaging.PrintingJobRequest;
 
@@ -17,18 +18,21 @@ public class MessageSender {
 	private MessageSender() {
 	}
 
+	public static void sendPrintingJobRequest(final Vertx vertx) {
+		MessageSender.sendPrintingJobRequest(vertx, null);
+	}
+	
 	public static void sendPrintingJobRequest(final Vertx vertx, final String identifier) {
 		try {
 			final PrintingJobRequest request = PrintingJobRequest.builder()
 				.identifier(identifier)
 				.build();
-			vertx.eventBus().send(Config.HTTP_SERVER_CHANNEL, OBJECT_MAPPER.writeValueAsString(request));
+			final DeliveryOptions options = new DeliveryOptions();
+			options.addHeader("type", "PrintingJobRequest");
+			
+			vertx.eventBus().send(Config.HTTP_SERVER_CHANNEL, OBJECT_MAPPER.writeValueAsString(request), options);
 		} catch(final IOException ioe) {
 			ioe.printStackTrace();
 		}
-	}
-
-	public static void sendPrintingJobRequest(final Vertx vertx) {
-		MessageSender.sendPrintingJobRequest(vertx, null);
-	}
+	}	
 }

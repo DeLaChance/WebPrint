@@ -6,6 +6,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
+import nl.webprint.util.MessageSender;
 
 public class RouterGenerator {
 

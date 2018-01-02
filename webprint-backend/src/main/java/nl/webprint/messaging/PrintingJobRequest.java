@@ -14,7 +14,7 @@ public class PrintingJobRequest {
 	@JsonProperty("identifier")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String identifier;
-
+	
 	@JsonCreator
 	PrintingJobRequest(@JsonProperty("identifier") final String identifier) {
 		this.identifier = identifier;
@@ -24,6 +24,10 @@ public class PrintingJobRequest {
 		this.identifier = builder.identifier;
 	}
 
+	public String getIdentifier() {
+		return identifier;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
