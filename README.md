@@ -5,16 +5,17 @@ The project should be deployable on any device (or at the very least any Linux e
 
 Technologies:
 1. Vertx toolkit
-2. Angular 4 
-3. Docker 
-4. CUPS 
+2. Angular 4
+3. Docker
+4. CUPS
 5. Sqlite
 6. Liquibase
 
 ### How to run ###
 
 `mvn clean install`
-`vertx run nl.webprint.server.ServerVerticle -cp target/webprint-backend-0.0.1-SNAPSHOT.jar` # Run the ServerVerticle
+`vertx run nl.webprint.verticle.database.DatabaseVerticle -cp target/webprint-backend-0.0.1-SNAPSHOT.jar -cluster` # Run the DatabaseVerticle
+`vertx run nl.webprint.verticle.server.ServerVerticle -cp target/webprint-backend-0.0.1-SNAPSHOT.jar -cluster` # Run the ServerVerticle
 
 ### Architecture ###
 The front-end running in a browser can do the following:
@@ -34,7 +35,7 @@ In the backend there are a few distinguishable components:
 The HTTP server listens to the backend calls and connects to the database. The printing status poller polls the 'physical printer' and emits events whenever the printer is ready or finished printing or when it breaks down. Upon an event that the printer is ready, the printing job dispatcher queries the database for the most recent job and tries to print it. If the printer cannot print the job, the printing job is discarded.
 
 ### BACKEND ###
-The [Vertex](http://vertx.io/) toolkit is used for coding the backend. 
+The [Vertex](http://vertx.io/) toolkit is used for coding the backend.
 
 Sqlite is used as a database and liquibase is used for provisioning this database.
 
