@@ -21,6 +21,7 @@ public class Runner {
 	public static void run(final Class klass) {
 		final VertxOptions vertxOptions = new VertxOptions()
 			.setClustered(true)
+			.setClusterHost("127.0.0.1")
 			.setEventBusOptions(new EventBusOptions())
 			.setClusterPublicHost(EVENT_BUS_HOST)
 			.setClusterPublicPort(EVENT_BUS_PORT);
