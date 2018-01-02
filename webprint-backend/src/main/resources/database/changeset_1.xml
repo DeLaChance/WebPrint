@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.7"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.7
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.7.xsd">
+
+    <changeSet id="webprint-1" author="lucien">
+        <createTable tableName="PRINTING_JOB">
+            <column name="id" type="varchar(36)" >
+              <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(255)" />
+            <column name="createdDate" type="int" />
+            <column name="startedDate" type="int" />
+            <column name="completedDate" type="int" />
+            <column name="file" type="clob" />
+        </createTable>
+        
+    </changeSet>
+
+</databaseChangeLog>
