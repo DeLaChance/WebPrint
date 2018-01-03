@@ -46,7 +46,7 @@ public class DatabaseVerticle extends AbstractVerticle {
 		final EventBus eventBus = this.vertx.eventBus();
 
 		final MessageConsumer<String> messageConsumer = eventBus.consumer(HTTP_SERVER_CHANNEL);
-		messageConsumer.handler(message -> {
+		messageConsumer.handler((Message<String> message) -> {
 			try {
 				final MultiMap headers = message.headers();
 				final String type = headers.get("type");
@@ -56,7 +56,7 @@ public class DatabaseVerticle extends AbstractVerticle {
 					case "PrintingJobRequest":
 						final PrintingJobRequest printingJobRequest = objectMapper.readValue(messageBody, PrintingJobRequest.class);
 						final Future<Void> future = Future.future();
-						this.handle(printingJobRequest, future.completer());
+						this.handle(message, printingJobRequest, future.completer());
 					default:
 				}
 			
@@ -70,7 +70,7 @@ public class DatabaseVerticle extends AbstractVerticle {
 
 	}
 	
-	private void handle(final PrintingJobRequest printingJobRequest, Handler<AsyncResult<Void>> aHandler) {
+	private void handle(final Message<String> message, final PrintingJobRequest printingJobRequest, Handler<AsyncResult<Void>> aHandler) {
 		Future<Void> finalFuture = Future.future();
 		finalFuture.setHandler(aHandler);		
 		
@@ -80,7 +80,9 @@ public class DatabaseVerticle extends AbstractVerticle {
 		
 		// Send a reply
 		fetchSQLtask.compose(printingJobResponse -> {
-			MessageSender.sendPrintingJobResponse(this.vertx, printingJobResponse);
+			System.out.println("Sending printing job response");
+			
+			MessageSender.sendPrintingJobResponse(message, printingJobResponse);
 		}, finalFuture);
 	}
 
