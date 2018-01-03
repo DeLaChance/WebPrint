@@ -15,7 +15,9 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import nl.webprint.messaging.PrintingJobRequest;
+import nl.webprint.messaging.PrintingJobResponse;
 import io.vertx.ext.sql.ResultSet;
+import nl.webprint.util.MessageSender;
 import nl.webprint.util.Runner;
 
 /**
@@ -54,7 +56,7 @@ public class DatabaseVerticle extends AbstractVerticle {
 					case "PrintingJobRequest":
 						final PrintingJobRequest printingJobRequest = objectMapper.readValue(messageBody, PrintingJobRequest.class);
 						final Future<Void> future = Future.future();
-						this.handle(message, printingJobRequest, future.completer());
+						this.handle(printingJobRequest, future.completer());
 					default:
 				}
 			
@@ -68,19 +70,17 @@ public class DatabaseVerticle extends AbstractVerticle {
 
 	}
 	
-	private void handle(final Message message, final PrintingJobRequest printingJobRequest, Handler<AsyncResult<Void>> aHandler) {
+	private void handle(final PrintingJobRequest printingJobRequest, Handler<AsyncResult<Void>> aHandler) {
 		Future<Void> finalFuture = Future.future();
 		finalFuture.setHandler(aHandler);		
 		
 		// Fetch DB records
-		Future<ResultSet> fetchSQLtask = Future.future();
+		Future<PrintingJobResponse> fetchSQLtask = Future.future();
 		this.printingJobRepository.fetchPrintingJobs(printingJobRequest, fetchSQLtask);
 		
-		fetchSQLtask.compose(resultSet -> {
-			System.out.println("reply: " + resultSet.toString());
-			
-			// Reply on message
-			message.reply(resultSet.toString());
+		// Send a reply
+		fetchSQLtask.compose(printingJobResponse -> {
+			MessageSender.sendPrintingJobResponse(this.vertx, printingJobResponse);
 		}, finalFuture);
 	}
 

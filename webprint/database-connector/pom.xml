@@ -56,7 +56,7 @@
         <executions>
       
           <execution>
-              <phase>process-resources</phase>
+              <!--  Disabled <phase>process-resources</phase> -->
               <configuration>
                   <propertyFile>src/main/resources/database/liquibase.properties</propertyFile>
               </configuration>
