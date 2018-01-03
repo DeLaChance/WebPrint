@@ -12,10 +12,10 @@ Technologies:
 6. Liquibase
 
 ### How to run ###
-Install the `vertx` package on your OS.
-
 `mvn clean install`
-`vertx run nl.webprint.verticle.database.DatabaseVerticle -cp target/webprint-backend-0.0.1-SNAPSHOT.jar -cluster -cluster-host 127.0.0.1` # Run the DatabaseVerticle
+
+Run the DatabaseVerticle
+`java -jar target/webprint-backend-0.0.1-SNAPSHOT-fat.jar -cluster -cluster-host 127.0.0.1`
 `vertx run nl.webprint.verticle.server.ServerVerticle -cp target/webprint-backend-0.0.1-SNAPSHOT.jar -cluster -cluster-host 127.0.0.1` # Run the ServerVerticle
 
 ### Architecture ###

@@ -29,10 +29,8 @@ public class PrintingJobRepository {
 		this.convertToSQL(printingJobRequest, toSQLStringFuture);
 		
 		toSQLStringFuture.compose(sqlQuery -> {
-			final Future<ResultSet> toResultSetFuture = Future.future();
-			this.databaseConnector.executeQuery(sqlQuery, toResultSetFuture);
-			return toResultSetFuture;
-		});
+			this.databaseConnector.executeQuery(sqlQuery, future.completer());
+		}, future);
 	}
 	
 	

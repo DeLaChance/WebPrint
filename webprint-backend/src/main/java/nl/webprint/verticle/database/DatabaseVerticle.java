@@ -63,6 +63,8 @@ public class DatabaseVerticle extends AbstractVerticle {
 			}
 		});
 		
+		System.out.println("Started DatabaseVerticle");
+		
 
 	}
 	
@@ -75,6 +77,8 @@ public class DatabaseVerticle extends AbstractVerticle {
 		this.printingJobRepository.fetchPrintingJobs(printingJobRequest, fetchSQLtask);
 		
 		fetchSQLtask.compose(resultSet -> {
+			System.out.println("reply: " + resultSet.toString());
+			
 			// Reply on message
 			message.reply(resultSet.toString());
 		}, finalFuture);

@@ -26,6 +26,8 @@ public class ServerVerticle extends AbstractVerticle {
 		final Router router = RouterGenerator.generate(this.vertx);
 		
 		httpServer.requestHandler(router::accept).listen(HTTP_SERVER_PORT);
+		
+		System.out.println("Started ServerVerticle");
 	}
 
 	@Override

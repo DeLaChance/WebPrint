@@ -31,9 +31,9 @@ public class DatabaseConnector {
 		this.client.getConnection(connectionFuture);
 		
 		connectionFuture.compose(connection -> {
-			final Future<ResultSet> future3 = Future.future();
-			this.runQuery(connection, sqlQuery, future3);
-		}, resultSetFuture);		
+			System.out.println("Running query: " + sqlQuery);
+			this.runQuery(connection, sqlQuery, resultSetFuture.completer());
+		}, resultSetFuture);
 		
 	}
 	
