@@ -1,4 +1,4 @@
-package nl.webprint.verticle.database;
+package nl.webprint.verticle;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

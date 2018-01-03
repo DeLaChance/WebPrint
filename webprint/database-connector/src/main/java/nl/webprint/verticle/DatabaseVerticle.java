@@ -1,4 +1,4 @@
-package nl.webprint.verticle.database;
+package nl.webprint.verticle;
 
 import static nl.webprint.messaging.Config.HTTP_SERVER_CHANNEL;
 

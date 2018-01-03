@@ -1,4 +1,4 @@
-package nl.webprint.verticle.server;
+package nl.webprint.verticle;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
