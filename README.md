@@ -15,8 +15,10 @@ Technologies:
 `mvn clean install`
 
 Run the DatabaseVerticle
-`java -jar target/webprint-backend-0.0.1-SNAPSHOT-fat.jar -cluster -cluster-host 127.0.0.1`
-`vertx run nl.webprint.verticle.server.ServerVerticle -cp target/webprint-backend-0.0.1-SNAPSHOT.jar -cluster -cluster-host 127.0.0.1` # Run the ServerVerticle
+`java -jar target/database-connector-NEXT-SNAPSHOT-fat.jar -cluster -cluster-host 127.0.0.`
+
+Run the ServerVerticle
+`java -jar target/http-server-NEXT-SNAPSHOT-fat.jar -cluster -cluster-host 127.0.0.1`
 
 ### Architecture ###
 The front-end running in a browser can do the following:
@@ -49,6 +51,9 @@ GET: /api/job
 url parameter: isActive (boolean)
 
 GET: /api/job/{id}
+url parameter: id (string)
+
+DELETE: /api/job/{id}
 url parameter: id (string)
 
 POST: /api/job
