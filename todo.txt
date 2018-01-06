@@ -1,5 +1,6 @@
-- Write workflow to delete a printing job (backend)
-- Write workflow to post a printing job (backend)
+- Write workflow to post a printing job (backend, RXJava)
 - Update front end
 - Integration testing
+- Refactor code
+
 - SockJS live updating

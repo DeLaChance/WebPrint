@@ -8,6 +8,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import nl.webprint.messaging.Config;
+import nl.webprint.messaging.PrintingJobDeletionRequest;
+import nl.webprint.messaging.PrintingJobDeletionResponse;
 import nl.webprint.messaging.PrintingJobRequest;
 import nl.webprint.messaging.PrintingJobResponse;
 
@@ -30,29 +32,11 @@ public class MessageSender {
 	}
 	
 	public static void sendPrintingJobRequest(final Vertx vertx, final String identifier, final Handler<AsyncResult<Message<String>>> replyHandler) {
-		try {
-			final PrintingJobRequest request = PrintingJobRequest.builder()
-				.identifier(identifier)
-				.build();
-			final DeliveryOptions options = new DeliveryOptions();
-			options.addHeader("type", "PrintingJobRequest");
-			
-			vertx.eventBus().send(Config.HTTP_SERVER_CHANNEL, OBJECT_MAPPER.writeValueAsString(request), options, replyHandler);
-		} catch(final IOException ioe) {
-			ioe.printStackTrace();
-		}
-	}
-	
-	public static void sendPrintingJobResponse(final Vertx vertx, final PrintingJobResponse response) {
-		try {
-			final String payload = OBJECT_MAPPER.writeValueAsString(response);
-			final DeliveryOptions options = new DeliveryOptions();
-			options.addHeader("type", "PrintingJobResponse");
-			
-			vertx.eventBus().send(Config.HTTP_SERVER_CHANNEL, payload, options);
-		} catch(final IOException ioe) {
-			ioe.printStackTrace();
-		}
+		final PrintingJobRequest request = PrintingJobRequest.builder()
+			.identifier(identifier)
+			.build();
+
+		MessageSender.send(vertx, request, PrintingJobRequest.class, replyHandler);
 	}
 
 	/**
@@ -64,14 +48,55 @@ public class MessageSender {
 	 * 				The response, containing that list
 	 */
 	public static void sendPrintingJobResponse(Message<String> message, PrintingJobResponse response) {
+		
+		MessageSender.sendReply(message, response, PrintingJobResponse.class);
+	}
+	
+	public static void sendPrintingJobDeletion(Vertx vertx, String identifier,
+			Handler<AsyncResult<Message<String>>> replyHandler) {
+		
+		final PrintingJobDeletionRequest request = PrintingJobDeletionRequest.builder()
+			.identifier(identifier)
+			.build();
+
+		MessageSender.send(vertx, request, PrintingJobDeletionRequest.class, replyHandler);
+		
+	}
+	
+	public static void sendPrintingJobDeletionResponse(final Message<String> message,final Boolean succeeded) {
+
+		final PrintingJobDeletionResponse response = PrintingJobDeletionResponse.builder()
+			.succeeded(succeeded)
+			.build();
+		
+		MessageSender.sendReply(message, response, PrintingJobDeletionResponse.class);
+	}	
+	
+	private static <T> void send(final Vertx vertx,final T object, final Class<T> klass, final Handler<AsyncResult<Message<String>>> replyHandler) {
 		try {
-			final String payload = OBJECT_MAPPER.writeValueAsString(response);		
+			final String payload = OBJECT_MAPPER.writeValueAsString(object);
 			final DeliveryOptions options = new DeliveryOptions();
-			options.addHeader("type", "PrintingJobResponse");
+			options.addHeader("type", klass.getSimpleName());
 			
-			message.reply(payload, options);
+			vertx.eventBus().send(Config.HTTP_SERVER_CHANNEL,  payload, options, replyHandler);			
 		} catch(final IOException ioe) {
 			ioe.printStackTrace();
 		}
 	}
+	
+	private static <T> void sendReply(final Message<String> message, final T response, final Class<T> klass) {
+		
+		try {
+			final String payload = OBJECT_MAPPER.writeValueAsString(response);	
+			
+			final DeliveryOptions options = new DeliveryOptions();
+			options.addHeader("type", klass.getSimpleName());
+			
+			message.reply(payload, options);
+			
+		} catch(final IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
+	
 }

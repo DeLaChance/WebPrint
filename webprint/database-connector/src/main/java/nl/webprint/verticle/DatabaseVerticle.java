@@ -14,6 +14,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
+import nl.webprint.messaging.PrintingJobDeletionRequest;
 import nl.webprint.messaging.PrintingJobRequest;
 import nl.webprint.messaging.PrintingJobResponse;
 import io.vertx.ext.sql.ResultSet;
@@ -51,12 +52,18 @@ public class DatabaseVerticle extends AbstractVerticle {
 				final MultiMap headers = message.headers();
 				final String type = headers.get("type");
 				final String messageBody = message.body();
+
+				final Future<Void> future = Future.future();
 				
 				switch(type) {
 					case "PrintingJobRequest":
 						final PrintingJobRequest printingJobRequest = objectMapper.readValue(messageBody, PrintingJobRequest.class);
-						final Future<Void> future = Future.future();
 						this.handle(message, printingJobRequest, future.completer());
+						break;
+					case "PrintingJobDeletionRequest":
+						final PrintingJobDeletionRequest printingJobDeletionRequest = objectMapper.readValue(messageBody, PrintingJobDeletionRequest.class);
+						this.handle(message, printingJobDeletionRequest, future.completer());
+						break;
 					default:
 				}
 			
@@ -70,6 +77,23 @@ public class DatabaseVerticle extends AbstractVerticle {
 
 	}
 	
+	private void handle(Message<String> message, PrintingJobDeletionRequest printingJobDeletionRequest,
+			Handler<AsyncResult<Void>> aHandler) {
+		
+		Future<Void> finalFuture = Future.future();
+		finalFuture.setHandler(aHandler);
+		
+		Future<Boolean> deleteInDBTask = Future.future();
+		this.printingJobRepository.deletePrintingJob(printingJobDeletionRequest, deleteInDBTask);
+		
+		deleteInDBTask.compose(succeeded -> {
+			System.out.println("Sending printing job deletion response");
+			
+			MessageSender.sendPrintingJobDeletionResponse(message, succeeded);
+			finalFuture.complete();
+		}, finalFuture);
+	}
+
 	private void handle(final Message<String> message, final PrintingJobRequest printingJobRequest, Handler<AsyncResult<Void>> aHandler) {
 		Future<Void> finalFuture = Future.future();
 		finalFuture.setHandler(aHandler);		
@@ -83,6 +107,7 @@ public class DatabaseVerticle extends AbstractVerticle {
 			System.out.println("Sending printing job response");
 			
 			MessageSender.sendPrintingJobResponse(message, printingJobResponse);
+			finalFuture.complete();
 		}, finalFuture);
 	}
 

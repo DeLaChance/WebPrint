@@ -41,13 +41,41 @@ public class RouterGenerator {
 			final String identifier = rc.request().getParam("id");
 			RouterGenerator.handlePrintingJobRequest(rc, identifier);
 		});
+		
+		// Delete a printing job
+		restAPI.route(HttpMethod.DELETE, "/job").handler(rc -> {
+			final String identifier = rc.request().getParam("id");
+			RouterGenerator.handePrintingJobDeletion(rc, identifier);
+		});
 
 		return restAPI;
 	}
 	
-	private static void handlePrintingJobRequest(final RoutingContext rc, final String identifier) {
-		rc.response().setChunked(true);
+	private static void handePrintingJobDeletion(final RoutingContext rc,final String identifier) {
+		final Future<Void> finalFuture = Future.future();
 		
+		final Future<Message<String>> future = Future.future();
+		MessageSender.sendPrintingJobDeletion(rc.vertx(), identifier, future.completer());
+
+		rc.response().setChunked(true);
+
+		long timerId = rc.vertx().setTimer(TIME_OUT, tid -> {
+			if( !rc.response().ended() ) {
+				rc.response().setStatusCode(500);
+				rc.response().end();
+			}
+		});
+		
+		future.compose(message -> {
+			rc.response().write(message.body());
+			rc.response().setStatusCode(200);
+			rc.response().end();
+			rc.vertx().cancelTimer(timerId);
+			finalFuture.complete();
+		}, finalFuture);
+	}
+
+	private static void handlePrintingJobRequest(final RoutingContext rc, final String identifier) {
 		final Future<Void> finalFuture = Future.future();
 		
 		final Future<Message<String>> future = Future.future();
@@ -56,15 +84,19 @@ public class RouterGenerator {
 		} else {
 			MessageSender.sendPrintingJobRequest(rc.vertx(), future.completer());
 		}
+		
+		rc.response().setChunked(true);
 
 		long timerId = rc.vertx().setTimer(TIME_OUT, tid -> {
 			if( !rc.response().ended() ) {
+				rc.response().setStatusCode(500);
 				rc.response().end();
 			}
 		});
 		
 		future.compose(message -> {
 			rc.response().write(message.body());
+			rc.response().setStatusCode(200);			
 			rc.response().end();
 			rc.vertx().cancelTimer(timerId);
 			finalFuture.complete();

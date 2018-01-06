@@ -12,6 +12,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
 import nl.webprint.messaging.PrintingJob;
+import nl.webprint.messaging.PrintingJobDeletionRequest;
 import nl.webprint.messaging.PrintingJobRequest;
 import nl.webprint.messaging.PrintingJobResponse;
 
@@ -37,24 +38,49 @@ public class PrintingJobRepository {
 		toSQLStringFuture.compose(sqlQuery -> {
 			// Delegate query to DB connector
 			final Future<ResultSet> resultSetFuture = Future.future();
-			this.databaseConnector.executeQuery(sqlQuery, resultSetFuture.completer());
+			this.databaseConnector.executeSelectQuery(sqlQuery, resultSetFuture.completer());
 			return resultSetFuture;
 		}).compose(resultSet -> {
 			// Convert into response			
 			future.handle(Future.succeededFuture(this.convert(resultSet)));
 		}, future);
 	}	
+
+
+	public void deletePrintingJob(final PrintingJobDeletionRequest printingJobDeletionRequest,
+			final Handler<AsyncResult<Boolean>> deleteInDBTask) {
+
+		final Future<Boolean> future = Future.future();
+		future.setHandler(deleteInDBTask);
+		
+		final Future<String> toSQLStringFuture = Future.future();
+		this.convertToSQL(printingJobDeletionRequest, toSQLStringFuture);
+		
+		toSQLStringFuture.compose(sqlQuery -> {
+			// Delegate query to DB connector
+			this.databaseConnector.executeDeleteQuery(sqlQuery, future.completer());
+			future.complete();
+		}, future);
+	}
 	
-	private void convertToSQL(final PrintingJobRequest printingJobRequest, final Handler<AsyncResult<String>> aHandler) {
+	private void convertToSQL(final PrintingJobRequest request, final Handler<AsyncResult<String>> aHandler) {
 	
 		final StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("SELECT p.id, p.name FROM PRINTING_JOB p");
+		stringBuilder.append("SELECT p.id, p.name, p.createdDate, p.completedDate, p.startedDate FROM PRINTING_JOB p");
 		
-		if( Objects.nonNull(printingJobRequest.getIdentifier()) ) {
-			stringBuilder.append(" WHERE p.id = " + printingJobRequest.getIdentifier());
+		if( Objects.nonNull(request.getIdentifier()) ) {
+			stringBuilder.append(" WHERE p.id = " + request.getIdentifier());
 		}
 		
 		aHandler.handle(Future.succeededFuture(stringBuilder.toString()));
+	}
+
+	private void convertToSQL(PrintingJobDeletionRequest deletionRequest, final Handler<AsyncResult<String>> aHandler) {
+		
+		final StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("DELETE FROM PRINTING_JOB WHERE id = " + deletionRequest.getIdentifier());
+		
+		aHandler.handle(Future.succeededFuture(stringBuilder.toString()));		
 	}
 	
 	private PrintingJobResponse convert(final ResultSet resultSet) {
@@ -73,6 +99,5 @@ public class PrintingJobRepository {
 			.printingJobs(printingJobs)
 			.build();
 	}
-	
 	
 }

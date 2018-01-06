@@ -15,7 +15,7 @@ Technologies:
 `mvn clean install`
 
 Run the DatabaseVerticle
-`java -jar target/database-connector-NEXT-SNAPSHOT-fat.jar -cluster -cluster-host 127.0.0.`
+`java -jar target/database-connector-NEXT-SNAPSHOT-fat.jar -cluster -cluster-host 127.0.0.1`
 
 Run the ServerVerticle
 `java -jar target/http-server-NEXT-SNAPSHOT-fat.jar -cluster -cluster-host 127.0.0.1`
