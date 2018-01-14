@@ -62,6 +62,25 @@ public class PrintingJobRepository {
 			future.complete();
 		}, future);
 	}
+
+
+	public void insertPrintingJob(PrintingJob printingJob, Future<Boolean> insertInDBFuture) {		
+		final String sqlQuery = this.convertToSQL(printingJob);
+		this.databaseConnector.executeInsertQuery(sqlQuery, insertInDBFuture);
+	}
+		
+	private String convertToSQL(final PrintingJob printingJob) {
+		final String query = String.format("INSERT INTO PRINTING_JOB VALUES ('%s', '%s', %o, %o, %o, '%s');",
+			printingJob.getId(),
+			printingJob.getName(),
+			printingJob.getCreated(),
+			printingJob.getStarted(),
+			printingJob.getCompleted(),
+			printingJob.getFileContents()
+		);
+		
+		return query;
+	}
 	
 	private void convertToSQL(final PrintingJobRequest request, final Handler<AsyncResult<String>> aHandler) {
 	
@@ -99,5 +118,4 @@ public class PrintingJobRepository {
 			.printingJobs(printingJobs)
 			.build();
 	}
-	
 }

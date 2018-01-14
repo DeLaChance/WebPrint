@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { RequestOptions } from '@angular/http';
+import { Headers } from '@angular/http';
 import { Observable } from 'rxjs/Rx'
 import { FileDropModule, UploadFile, UploadEvent } from 'ngx-file-drop';
 
 import { PrintingJob } from './printing-job'
+
 
 class RawPrintingJob {
   id: string;
@@ -14,19 +17,26 @@ class RawPrintingJob {
   fileContents: string;
 }
 
+class RawPrintingJobs {
+  printingJobs: RawPrintingJob[];
+}
+
 @Injectable()
 export class RestService {
 
   private BASE_URL: string;
+  private RX_BASE_URL: string;
 
   constructor(private http: HttpClient) {
-    this.BASE_URL = "http://localhost:8081"
+    this.BASE_URL = "http://localhost:8081";
+
+    // Alternative verticle to test RxJava
+    this.RX_BASE_URL = "http://localhost:8082";
   }
 
   fetchPrintingJobs() {
-    return this.http.get<RawPrintingJob[]>(this.BASE_URL + '/api/job')
+    return this.http.get<RawPrintingJobs>(this.BASE_URL + '/api/job')
       .map(data => {
-        console.log(data);
         var printingJobs: PrintingJob[] = [];
 
         data.printingJobs.forEach(rawPrintingJob => {
@@ -39,21 +49,14 @@ export class RestService {
   }
 
   fetchActiveJob() {
-    //return this.http.get<PrintingJob[]>('/api/jobs?active=true');
-    var mockJob = {
-      id: "4",
-      name: "name4",
-      created: new Date(),
-      started: new Date(),
-      completed: null,
-    };
-    return Observable.of(mockJob);
+    return this.http.get<RawPrintingJobs>(this.RX_BASE_URL + '/api/job?active=true')
+      .map(data => {
+        if( data.printingJobs.length > 0 ) {
+          return PrintingJob.decode(data.printingJobs[0]);
+        } else {
+          return null;
+        }
+      });
   }
 
-  postPrintingJob(file: UploadFile) {
-    const formData = new FormData();
-    formData.append("file", file.fileEntry);
-    console.log("sending form " + formData);
-    this.http.post('/api/jobs', formData);
-  }
 }

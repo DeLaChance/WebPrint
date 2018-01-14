@@ -1,5 +1,5 @@
-- Write workflow to post a printing job (backend, RXJava)
-- Update front end
+- Front-end map is not a function
+- Active printing job (RxJava, separate verticle, combine server + DB)
 - Integration testing
 - Refactor code
 

@@ -1,5 +1,6 @@
 package nl.webprint.verticle;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,10 +51,6 @@ public class RouterGenerator {
 	public static Router generateRestApi(final Vertx vertx) {
 		final Router restAPI = Router.router(vertx);
 		
-		// Store all file uploads under the uploads directory
-		restAPI.route()
-			.handler(BodyHandler.create().setUploadsDirectory(UPLOADS_DIRECTORY));		
-		
 		// Request all printing jobs
 		restAPI.route(HttpMethod.GET, "/job").handler(rc -> {
 			RouterGenerator.handlePrintingJobRequest(rc, null);
@@ -70,68 +67,83 @@ public class RouterGenerator {
 			final String identifier = rc.request().getParam("id");
 			RouterGenerator.handePrintingJobDeletion(rc, identifier);
 		});
+
+		// Store all file uploads under the uploads directory
+		restAPI.route(HttpMethod.POST, "/job")
+			.handler(BodyHandler.create()
+				.setUploadsDirectory(UPLOADS_DIRECTORY)
+				.setMergeFormAttributes(true));		
 		
-		restAPI.route(HttpMethod.POST, "/job").handler(rc -> {			
-			final List<FileUpload> fileUploads = new ArrayList<>();
-			fileUploads.addAll(rc.fileUploads());
+		restAPI.route(HttpMethod.POST, "/job").handler(rc -> {
 			
-			if( fileUploads.size() > 0 ) {
-				RouterGenerator.handlePrintingJobCreation(rc,  fileUploads.get(0));
-			}
+			RouterGenerator.handlePrintingJobCreation(rc);			
 		});		
 
 		return restAPI;
 	}
 	
-	private static void handlePrintingJobCreation(final RoutingContext rc, final FileUpload fileUpload) {		
-		final Future<Void> finalFuture = Future.future();
+	private static void handlePrintingJobCreation(final RoutingContext rc) {
 		
-		final Future<Buffer> readFileFuture = Future.future();
-		RouterGenerator.readFile(rc.vertx(), fileUpload, readFileFuture.completer());
-				
 		rc.response().setChunked(true);
-		long timerId = rc.vertx().setTimer(TIME_OUT, tid -> {
+		long timerId = rc.vertx().setTimer(5*TIME_OUT, tid -> {
 			if( !rc.response().ended() ) {
 				rc.response().setStatusCode(500);
 				rc.response().end();
 			}
-		});
+		});			
+
+		final List<FileUpload> fileUploads = new ArrayList<>();
+		fileUploads.addAll(rc.fileUploads());		
 		
-		readFileFuture.compose(buffer -> {
-			final Future<Message<String>> sendMessageFuture = Future.future();
+		if( fileUploads.size() > 0 ) {		
+			final Future<Void> finalFuture = Future.future();
 			
-			final String identifier = UUID.randomUUID().toString();
-			final String fileContents = buffer.toString();
-			
-			final PrintingJob printingJob = PrintingJob.builder()
-				.completed(null)
-				.created(Instant.now().getEpochSecond())
-				.started(null)
-				.fileContents(fileContents)
-				.id(identifier)
-				.name(fileUpload.fileName())
-				.started(null)
-				.build();
-			
-			MessageSender.sendPrintingJobCreation(rc.vertx(), printingJob, sendMessageFuture.completer());
-			return sendMessageFuture;
-		}).compose(message -> {
-			rc.response().write(message.body());
-			rc.response().setStatusCode(200);
-			rc.response().end();
-			rc.vertx().cancelTimer(timerId);
-			finalFuture.complete();			
-		}, finalFuture);
+			final Future<Buffer> readFileFuture = Future.future();			
+			RouterGenerator.readFile(rc.vertx(), fileUploads.get(0), readFileFuture);
+					
+			readFileFuture.compose(buffer -> {
+				final Future<Message<String>> sendMessageFuture = Future.future();
+				
+				final String identifier = UUID.randomUUID().toString();
+				final String fileContents = buffer.toString();
+				
+				final PrintingJob printingJob = PrintingJob.builder()
+					.completed(null)
+					.created(Instant.now().getEpochSecond())
+					.started(null)
+					.fileContents(fileContents)
+					.id(identifier)
+					.name(fileUploads.get(0).fileName())
+					.started(null)
+					.build();
+				
+				MessageSender.sendPrintingJobCreation(rc.vertx(), printingJob, sendMessageFuture.completer());
+				return sendMessageFuture;
+			}).compose(message -> {
+				rc.response().write(message.body());
+				rc.response().setStatusCode(200);
+				rc.response().end();
+				rc.vertx().cancelTimer(timerId);
+				finalFuture.complete();			
+			}, finalFuture); 
+		}
 	}
 	
-	private static void readFile(final Vertx vertx, final FileUpload fileUpload, final Handler<AsyncResult<Buffer>> aHandler) {
-		final Future<Buffer> finalFuture = Future.future();
-		finalFuture.setHandler(aHandler);
-		
+	private static void readFile(final Vertx vertx, final FileUpload fileUpload, final Future<Buffer> futureBuffer) {
 		final FileSystem fileSystem = vertx.fileSystem();
-		final String fileName = fileUpload.fileName();
+		final String uploadedFileName = fileUpload.uploadedFileName();
 
-		fileSystem.readFile(UPLOADS_DIRECTORY + fileName, finalFuture.completer());
+		final Future<Buffer> readFileFuture = Future.future();
+		fileSystem.readFile(uploadedFileName, readFileFuture.completer());
+		
+		readFileFuture.compose(buffer -> {
+			futureBuffer.complete(buffer);
+		}, futureBuffer)
+		.otherwise(exception -> {
+			exception.printStackTrace();
+			return null;
+		});
+	
 	}
 	
 	private static void handePrintingJobDeletion(final RoutingContext rc,final String identifier) {

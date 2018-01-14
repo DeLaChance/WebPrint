@@ -34,10 +34,4 @@ export class DraganddropComponent implements OnInit {
     console.log(event);
   }
 
-  public uploadFiles() {
-    for(let file of this.files) {
-      this.restService.postPrintingJob(file);
-    }
-  }
-
 }

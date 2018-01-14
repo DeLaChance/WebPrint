@@ -18,7 +18,9 @@ Run the DatabaseVerticle
 `java -jar target/database-connector-NEXT-SNAPSHOT-fat.jar -cluster -cluster-host 127.0.0.1`
 
 Run the ServerVerticle
-`java -jar target/http-server-NEXT-SNAPSHOT-fat.jar -cluster -cluster-host 127.0.0.1`
+`java -jar target/http-server-3.5.0-fat.jar -cluster -cluster-host 127.0.0.1`
+
+`java -agentlib:jdwp=transport=dt_socket,address=1044,server=y,suspend=y -jar target/http-server-NEXT-SNAPSHOT-fat.jar -cluster -cluster-host 127.0.0.1`
 
 ### Architecture ###
 The front-end running in a browser can do the following:

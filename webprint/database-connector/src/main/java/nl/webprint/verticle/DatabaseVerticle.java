@@ -14,6 +14,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
+import nl.webprint.messaging.PrintingJob;
 import nl.webprint.messaging.PrintingJobDeletionRequest;
 import nl.webprint.messaging.PrintingJobRequest;
 import nl.webprint.messaging.PrintingJobResponse;
@@ -64,7 +65,13 @@ public class DatabaseVerticle extends AbstractVerticle {
 						final PrintingJobDeletionRequest printingJobDeletionRequest = objectMapper.readValue(messageBody, PrintingJobDeletionRequest.class);
 						this.handle(message, printingJobDeletionRequest, future.completer());
 						break;
+					case "PrintingJob":	
+						final PrintingJob printingJob = objectMapper.readValue(messageBody, PrintingJob.class);
+						this.handle(message, printingJob, future.completer());
+						break;
 					default:
+						System.out.println("Unsupported incoming message type: " + type);
+						break;
 				}
 			
 			} catch(final IOException ioe) {
@@ -77,6 +84,23 @@ public class DatabaseVerticle extends AbstractVerticle {
 
 	}
 	
+	private void handle(Message<String> message, PrintingJob printingJob, Handler<AsyncResult<Void>> aHandler) {
+		
+		Future<Void> finalFuture = Future.future();
+		finalFuture.setHandler(aHandler);
+		
+		final Future<Boolean> insertInDBFuture = Future.future();
+		this.printingJobRepository.insertPrintingJob(printingJob, insertInDBFuture);
+		
+		insertInDBFuture.compose(succeeded -> { 
+			// Send a reply to HTTP-server
+			MessageSender.sendPrintingJobCreated(message, succeeded);
+			
+			finalFuture.complete();
+		}, finalFuture);
+		
+	}
+
 	private void handle(Message<String> message, PrintingJobDeletionRequest printingJobDeletionRequest,
 			Handler<AsyncResult<Void>> aHandler) {
 		
@@ -87,8 +111,6 @@ public class DatabaseVerticle extends AbstractVerticle {
 		this.printingJobRepository.deletePrintingJob(printingJobDeletionRequest, deleteInDBTask);
 		
 		deleteInDBTask.compose(succeeded -> {
-			System.out.println("Sending printing job deletion response");
-			
 			MessageSender.sendPrintingJobDeletionResponse(message, succeeded);
 			finalFuture.complete();
 		}, finalFuture);
@@ -104,8 +126,6 @@ public class DatabaseVerticle extends AbstractVerticle {
 		
 		// Send a reply
 		fetchSQLtask.compose(printingJobResponse -> {
-			System.out.println("Sending printing job response");
-			
 			MessageSender.sendPrintingJobResponse(message, printingJobResponse);
 			finalFuture.complete();
 		}, finalFuture);

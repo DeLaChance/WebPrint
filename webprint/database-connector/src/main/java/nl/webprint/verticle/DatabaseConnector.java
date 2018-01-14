@@ -32,7 +32,6 @@ public class DatabaseConnector {
 		this.client.getConnection(connectionFuture);
 		
 		connectionFuture.compose(connection -> {
-			System.out.println("Running query: " + sqlQuery);
 			this.runQuery(connection, sqlQuery, resultSetFuture.completer());
 		}, resultSetFuture);
 		
@@ -46,12 +45,10 @@ public class DatabaseConnector {
 		this.client.getConnection(connectionFuture);
 		
 		connectionFuture.compose(connection -> {
-			System.out.println("Running deletion query: " + sqlQuery);
 			final Future<UpdateResult> intermediateFuture = Future.future();
 			this.runUpdate(connection, sqlQuery, intermediateFuture.completer());
 			return intermediateFuture;
 		}).compose(updateResult -> {
-			System.out.println("updateResult.getUpdated()=" + updateResult.getUpdated());
 			final boolean wasDeleted = (updateResult.getUpdated() == 1);
 			deletedFuture.complete(wasDeleted);
 		}, deletedFuture)
@@ -60,13 +57,36 @@ public class DatabaseConnector {
 			return false;
 		});
 	}
+
+	public void executeInsertQuery(String sqlQuery, Future<Boolean> insertInDBFuture) {
+		
+		final Future<SQLConnection> connectionFuture = Future.future();
+		this.client.getConnection(connectionFuture);
+		
+		connectionFuture.compose(connection -> {
+			final Future<UpdateResult> intermediateFuture = Future.future();
+			this.runUpdate(connection, sqlQuery, intermediateFuture.completer());
+			return intermediateFuture;
+		}).compose(insertionResult -> {
+			final boolean wasInserted = (insertionResult.getUpdated() == 1);
+			insertInDBFuture.complete(wasInserted);
+		}, insertInDBFuture)
+		.otherwise(exception -> {
+			exception.printStackTrace();
+			return false;
+		});
+		
+	}
 	
 	private void runQuery(final SQLConnection connection, final String sqlQuery, final Handler<AsyncResult<ResultSet>> aHandler) {
+		System.out.println("Running query: " + sqlQuery);
+		
 		connection.query(sqlQuery, aHandler);
 	}
 	
 	private void runUpdate(final SQLConnection connection, final String sqlQuery, final Handler<AsyncResult<UpdateResult>> aHandler) {
+		System.out.println("Running query: " + sqlQuery);
+		
 		connection.update(sqlQuery, aHandler);
 	}
-
 }
