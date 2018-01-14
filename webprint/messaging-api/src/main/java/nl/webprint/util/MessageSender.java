@@ -8,6 +8,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import nl.webprint.messaging.Config;
+import nl.webprint.messaging.PrintingJob;
 import nl.webprint.messaging.PrintingJobDeletionRequest;
 import nl.webprint.messaging.PrintingJobDeletionResponse;
 import nl.webprint.messaging.PrintingJobRequest;
@@ -71,6 +72,13 @@ public class MessageSender {
 		
 		MessageSender.sendReply(message, response, PrintingJobDeletionResponse.class);
 	}	
+
+
+	public static void sendPrintingJobCreation(final Vertx vertx, final PrintingJob printingJob,
+			final Handler<AsyncResult<Message<String>>> replyHandler) {
+
+		MessageSender.send(vertx, printingJob, PrintingJob.class, replyHandler);
+	}
 	
 	private static <T> void send(final Vertx vertx,final T object, final Class<T> klass, final Handler<AsyncResult<Message<String>>> replyHandler) {
 		try {
