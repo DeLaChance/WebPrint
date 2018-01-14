@@ -19,6 +19,7 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import nl.webprint.messaging.PrintingJob;
 import nl.webprint.util.MessageSender;
@@ -31,6 +32,12 @@ public class RouterGenerator {
 	public static Router generate(final Vertx vertx) {
 		final Router router = Router.router(vertx);
 
+	    router.route().handler(CorsHandler.create("*")
+	      .allowedMethod(HttpMethod.GET)
+	      .allowedMethod(HttpMethod.POST)
+	      .allowedMethod(HttpMethod.OPTIONS)
+	    );
+		
 		router.route("/").handler(routingContext -> {
 			routingContext.reroute("/static/index.html");
 		});
