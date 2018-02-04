@@ -1,5 +1,5 @@
 /**
- * Package that houses all the adaptersto the main application.
+ * Package that houses all the adapters to the main application.
  * 
  * @author lucien
  *
