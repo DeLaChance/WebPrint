@@ -24,7 +24,13 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
       <version>${vertx.version}</version>
-    </dependency>    
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-hazelcast</artifactId>
+      <version>${vertx.version}</version>
+    </dependency>
     
     <dependency>
       <groupId>io.vertx</groupId>
@@ -36,6 +42,50 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-rx-java2</artifactId>
       <version>${vertx.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-config</artifactId>
+      <version>${vertx.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-service-proxy</artifactId>
+      <version>${vertx.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-service-proxy</artifactId>
+      <version>${vertx.version}</version>
+      <classifier>processor</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-codegen</artifactId>
+      <version>${vertx.version}</version>
+      <scope>provided</scope>
+      
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+      </exclusions>
+      
     </dependency>
     
     <dependency>
@@ -62,6 +112,21 @@
   <build>
   
     <plugins>
+    
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.7.0</version>
+          
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <annotationProcessors>
+              <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+            </annotationProcessors>
+            
+          </configuration>
+        </plugin>
       
         <plugin>
             <groupId>io.fabric8</groupId>
@@ -85,7 +150,7 @@
             <configuration>
                 <redeploy>true</redeploy>
                 <appid>rx-webprint-server</appid>
-                <verticle>nl.webprint.configuration.Standalone</verticle>
+                <verticle>nl.webprint.Standalone</verticle>
             </configuration>
         </plugin>
     
