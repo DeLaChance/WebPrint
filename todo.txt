@@ -1,6 +1,7 @@
+- Add RX-module
 - Front-end map is not a function
-- Active printing job (RxJava, separate verticle, combine server + DB)
-- Integration testing
+- Integration testing (stuff from work)
+- SockJS live updating (active printing job)
 - Refactor code
 
-- SockJS live updating
+- Dockerize app

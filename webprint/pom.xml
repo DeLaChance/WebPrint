@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>nl.webprint</groupId>
@@ -12,13 +12,17 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>    
+    <maven.compiler.target>1.8</maven.compiler.target>
+    
+    <vertx.version>3.5.0</vertx.version>
+    <vertx.plugin.version>1.0.9</vertx.plugin.version>
   </properties>
   
   <modules>
     <module>database-connector</module>
     <module>messaging-api</module>
     <module>http-server</module>
+    <module>rx-webprint-server</module>
   </modules>  
 
   <dependencies>
@@ -27,13 +31,13 @@
       <dependency>
         <groupId>io.vertx</groupId>
         <artifactId>vertx-core</artifactId>
-        <version>3.5.0</version>
+        <version>${vertx.version}</version>
       </dependency>
 
       <dependency>
         <groupId>io.vertx</groupId>
         <artifactId>vertx-hazelcast</artifactId>
-        <version>3.5.0</version>
+        <version>${vertx.version}</version>
       </dependency>
       
       <dependency>
