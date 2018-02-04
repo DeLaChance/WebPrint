@@ -39,7 +39,6 @@ public class ConfigurationRepositoryImpl implements ConfigurationRepository {
 	public void read(String key, Handler<AsyncResult<JsonObject>> resultHandler) {
 		this.configRetriever.rxGetConfig()
 			.subscribe(json -> {
-				
 				resultHandler.handle(Future.succeededFuture(json.getJsonObject(key)));
 			}, throwable -> {
 				ServiceException.fail(1, "key " + key + " does not exist!");
