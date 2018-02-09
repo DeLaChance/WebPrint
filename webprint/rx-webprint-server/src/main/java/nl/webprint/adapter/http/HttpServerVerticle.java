@@ -79,13 +79,13 @@ public class HttpServerVerticle extends AbstractVerticle {
 		});
 		router.route("/static/*").handler(createStaticHandler());
 		
-		router.route("api/job").method(HttpMethod.GET).handler(request -> sendToEventBus(request, 
+		router.route("/api/job").method(HttpMethod.GET).handler(request -> sendToEventBus(request, 
 			AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));
-		router.route("api/job/:id").method(HttpMethod.GET).handler(request -> sendToEventBus(request, 
+		router.route("/api/job/:id").method(HttpMethod.GET).handler(request -> sendToEventBus(request, 
 				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));
-		router.route("api/job").method(HttpMethod.DELETE).handler(request -> sendToEventBus(request, 
+		router.route("/api/job").method(HttpMethod.DELETE).handler(request -> sendToEventBus(request, 
 				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));
-		router.route("api/job").method(HttpMethod.POST).handler(request -> sendToEventBus(request, 
+		router.route("/api/job").method(HttpMethod.POST).handler(request -> sendToEventBus(request, 
 				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));		
 		
 		return router;
