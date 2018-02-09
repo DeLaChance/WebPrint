@@ -1,18 +1,19 @@
 package nl.webprint.printing;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.reactivex.Completable;
+import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.file.OpenOptions;
-import io.vertx.core.Future;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
-import nl.webprint.adapter.http.HttpServerVerticle;
 
 /**
  * A printing job repository that persists its data on the file system.
@@ -46,14 +47,63 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 	
 	@Override
 	public void findAll(Handler<AsyncResult<List<PrintingJob>>> resultHandler) {
-		// TODO Auto-generated method stub
+
+		vertx.fileSystem()
+			.rxReadDir(PRINTING_JOB_DIR)
+			.flatMapObservable(Observable::fromIterable)
+			.flatMapMaybe(directoryName -> {
+				final String filePath = directoryName + "/metadata.json";
+				return this.findByFilePath(filePath);
+			})
+			.toList()
+			.subscribe(
+				printingJobs -> {
+					resultHandler.handle(Future.succeededFuture(printingJobs));
+				},
+				throwable -> {
+					resultHandler.handle(Future.failedFuture(throwable));
+				}
+			);
+			
 		
 	}
 
 	@Override
-	public void findById(PrintingJobIdentifier identifier, Handler<AsyncResult<List<PrintingJob>>> resultHandler) {
-		// TODO Auto-generated method stub
+	public void findById(PrintingJobIdentifier identifier, Handler<AsyncResult<PrintingJob>> resultHandler) {
+		final String filePath = PRINTING_JOB_DIR + identifier.getIdentifier().toString() + "/metadata.json";
+
+			this.findByFilePath(filePath)
+			.subscribe(
+				result -> {
+					resultHandler.handle(Future.succeededFuture(result));
+				},
+				throwable -> {
+					resultHandler.handle(Future.failedFuture(throwable));
+				}
+			);
+
+	}
+	
+	private Maybe<PrintingJob> findByFilePath(final String filePath) {
 		
+		return vertx.fileSystem().rxExists(filePath)
+		.flatMapMaybe(fileExists -> {
+			if( fileExists ) {
+				return vertx.fileSystem().rxReadFile(filePath)
+				.doOnError(fileException -> {
+					LOGGER.error("Could not open file " + filePath, fileException);
+				})
+				.flatMapMaybe(contents ->
+					Optional.ofNullable(contents)
+					.map(Buffer::toJsonObject)
+					.map(obj -> obj.mapTo(PrintingJob.class))
+					.map(Maybe::just)
+					.orElse(Maybe.empty())
+				);
+			} else {
+				return Maybe.empty();
+			}
+		});		
 	}
 
 	@Override
@@ -90,7 +140,7 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 	public void delete(PrintingJobIdentifier identifier, Handler<AsyncResult<Void>> resultHandler) {
 		
 		vertx.fileSystem()
-			.rxDeleteRecursive(PRINTING_JOB_DIR + "/" + identifier.getIdentifier(), true)
+			.rxDeleteRecursive(PRINTING_JOB_DIR + identifier.getIdentifier(), true)
 			.subscribe(
 				() -> {
 					LOGGER.info("Deleted printing job with id=" + identifier.getIdentifier().toString());

@@ -2,6 +2,7 @@ package nl.webprint.printing;
 
 import java.util.List;
 
+import io.reactivex.Maybe;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
@@ -31,7 +32,7 @@ public interface PrintingJobRepository {
 	
 	void findAll(Handler<AsyncResult<List<PrintingJob>>> resultHandler);
 	
-	void findById(PrintingJobIdentifier identifier, Handler<AsyncResult<List<PrintingJob>>> resultHandler);
+	void findById(PrintingJobIdentifier identifier, Handler<AsyncResult<PrintingJob>> resultHandler);
 	
 	void add(UploadedFile uploadedFile, Handler<AsyncResult<Void>> resultHandler);
 	
