@@ -1,4 +1,4 @@
-package nl.webprint.adapter;
+package nl.webprint.printing;
 
 import java.util.List;
 
