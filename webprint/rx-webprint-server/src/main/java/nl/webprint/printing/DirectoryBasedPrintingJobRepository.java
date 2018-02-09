@@ -60,11 +60,7 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 	public void add(UploadedFile uploadedFile, Handler<AsyncResult<Void>> resultHandler) {
 		
 		final PrintingJob printingJob = PrintingJob.from(uploadedFile, PRINTING_JOB_DIR);		
-		io.vertx.core.buffer.Buffer delegate = io.vertx.core.buffer.Buffer.buffer(printingJob
-			.toJson()
-			.encodePrettily()
-		);
-		Buffer bufferData = new Buffer(delegate);
+		Buffer bufferData = Buffer.buffer(printingJob.toJson().encodePrettily());
 		
 		vertx.fileSystem()
 			.rxMkdir(printingJob.getFilePath())
@@ -92,7 +88,19 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 
 	@Override
 	public void delete(PrintingJobIdentifier identifier, Handler<AsyncResult<Void>> resultHandler) {
-		// TODO Auto-generated method stub
+		
+		vertx.fileSystem()
+			.rxDeleteRecursive(PRINTING_JOB_DIR + "/" + identifier.getIdentifier(), true)
+			.subscribe(
+				() -> {
+					LOGGER.info("Deleted printing job with id=" + identifier.getIdentifier().toString());
+					resultHandler.handle(Future.succeededFuture());
+				},
+				throwable -> {
+					LOGGER.error("Could not delete the printing job for id=" + identifier.getIdentifier().toString());
+					resultHandler.handle(Future.failedFuture(throwable));
+				}
+			);
 		
 	}
 
