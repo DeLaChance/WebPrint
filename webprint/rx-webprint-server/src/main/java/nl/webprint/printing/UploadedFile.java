@@ -8,9 +8,11 @@ import io.vertx.core.json.JsonObject;
 @DataObject
 public class UploadedFile {
 	
+	/** File name, e.g. 'abcd.txt' in '/var/tmp/abcd.txt' **/
 	@JsonProperty("fileName")
 	private String fileName;
 	
+	/** Full path (including name of uploaded file), e.g. /var/tmp/abcd.txt **/
 	@JsonProperty("uploadedFilePath")
 	private String uploadedFilePath;
 	

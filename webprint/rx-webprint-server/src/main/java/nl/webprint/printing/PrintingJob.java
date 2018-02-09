@@ -1,5 +1,6 @@
 package nl.webprint.printing;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,9 +14,11 @@ public class PrintingJob {
 	@JsonProperty("identifier")
 	private PrintingJobIdentifier identifier;
 	
+	/** File name of the file **/
 	@JsonProperty("fileName")
 	private String fileName;
 	
+	/** Path (excluding name of uploaded file), e.g. '/var/tmp/' **/
 	@JsonProperty("filePath")
 	private String filePath;
 	
@@ -76,6 +79,22 @@ public class PrintingJob {
 	public JsonObject toJson() {
 		return JsonObject.mapFrom(this);
 	}
+
+	public static PrintingJob from(UploadedFile uploadedFile, String targetDirectory) {
+		final UUID uuid = UUID.randomUUID();
+		final PrintingJobIdentifier identifier = PrintingJobIdentifier.builder()
+			.identifier(uuid)
+			.build();
+		
+		return PrintingJob.builder()
+			.identifier(identifier)
+			.fileName(uploadedFile.getFileName())
+			.filePath(targetDirectory + "/" + uuid.toString())
+			.createdTime(Instant.now().getEpochSecond())
+			.startedTime(null)
+			.completedTime(null)
+			.build();
+	}	
 	
 	public static Builder builder() {
 		return new Builder();
@@ -128,5 +147,5 @@ public class PrintingJob {
 			return new PrintingJob(this);
 		}
 		
-	}	
+	}
 }

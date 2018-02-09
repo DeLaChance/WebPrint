@@ -2,9 +2,17 @@ package nl.webprint.printing;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.reactivex.Completable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.file.OpenOptions;
+import io.vertx.core.Future;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.buffer.Buffer;
+import nl.webprint.adapter.http.HttpServerVerticle;
 
 /**
  * A printing job repository that persists its data on the file system.
@@ -16,10 +24,24 @@ import io.vertx.reactivex.core.Vertx;
  */
 public class DirectoryBasedPrintingJobRepository implements PrintingJobRepository {
 
+	public static final String PRINTING_JOB_DIR = "/var/uploads/";
+	private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryBasedPrintingJobRepository.class);
+	
 	private final Vertx vertx;
 	
 	public DirectoryBasedPrintingJobRepository(final io.vertx.core.Vertx vertx) {
 		this.vertx = new Vertx(vertx);
+		
+		this.vertx.fileSystem().rxExists(PRINTING_JOB_DIR)
+			.subscribe(	existsBoolean -> {
+				if( !existsBoolean ) {
+					this.vertx.fileSystem().rxMkdirs(PRINTING_JOB_DIR)
+						.subscribe(
+							() ->  LOGGER.info("Directory " + PRINTING_JOB_DIR + " created."),
+							throwable -> LOGGER.error("Directory " + PRINTING_JOB_DIR + " was not created: ", throwable)
+						);
+				}
+			});
 	}
 	
 	@Override
@@ -35,8 +57,36 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 	}
 
 	@Override
-	public void add(PrintingJob printingJob, Handler<AsyncResult<Void>> resultHandler) {
-		// TODO Auto-generated method stub
+	public void add(UploadedFile uploadedFile, Handler<AsyncResult<Void>> resultHandler) {
+		
+		final PrintingJob printingJob = PrintingJob.from(uploadedFile, PRINTING_JOB_DIR);		
+		io.vertx.core.buffer.Buffer delegate = io.vertx.core.buffer.Buffer.buffer(printingJob
+			.toJson()
+			.encodePrettily()
+		);
+		Buffer bufferData = new Buffer(delegate);
+		
+		vertx.fileSystem()
+			.rxMkdir(printingJob.getFilePath())
+			.andThen(vertx.fileSystem().rxCopy(uploadedFile.getUploadedFilePath(),
+				printingJob.getFilePath()))
+			.andThen(vertx.fileSystem().rxCreateFile(printingJob.getFilePath() + "/metadata.json"))
+			.andThen(vertx.fileSystem().rxOpen(printingJob.getFilePath() + "/metadata.json", 
+				new OpenOptions().setRead(true).setWrite(true))
+			)
+			.flatMapCompletable(asyncFile -> 
+				asyncFile.write(bufferData).rxClose()
+			)
+			.subscribe(
+				() -> {
+					LOGGER.info("Created printing job for file=" + printingJob.getFileName());
+					resultHandler.handle(Future.succeededFuture());
+				},
+				throwable -> {
+					LOGGER.error("Could not create a printing job for file=" + printingJob.getFileName());
+					resultHandler.handle(Future.failedFuture(throwable));
+				}
+			);
 		
 	}
 
