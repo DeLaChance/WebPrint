@@ -1,7 +1,9 @@
 package nl.webprint.adapter.http;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -17,10 +19,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import nl.webprint.configuration.AddressConfiguration;
@@ -30,6 +34,7 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
     public static final Integer TIME_OUT = 5000;
+    public static final String UPLOADS_DIRECTORY = "/var/www/uploads/";
     
     private Integer port;
     private String hostname;
@@ -85,8 +90,13 @@ public class HttpServerVerticle extends AbstractVerticle {
 				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));
 		router.route("/api/job").method(HttpMethod.DELETE).handler(request -> sendToEventBus(request, 
 				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));
-		router.route("/api/job").method(HttpMethod.POST).handler(request -> sendToEventBus(request, 
-				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));		
+		router.route("/api/job").method(HttpMethod.POST)
+			.handler(request -> sendToEventBus(request, 
+				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()))
+			.handler(BodyHandler.create()
+				.setUploadsDirectory(UPLOADS_DIRECTORY)
+				.setMergeFormAttributes(true)
+			);
 		
 		return router;
 	}
@@ -131,6 +141,15 @@ public class HttpServerVerticle extends AbstractVerticle {
 		if( routingContext.getBody().length() > 0 ) {
 			payload.mergeIn(routingContext.getBodyAsJson());
 		}
+		
+		final JsonArray fileUploads = new JsonArray();
+		routingContext.fileUploads()
+			.stream()
+			.map(FileUpload::from)
+			.forEach(fileUpload -> {
+				fileUploads.add(fileUpload);
+			});
+		payload.put("fileUploads", fileUploads);
 		
 		if( Objects.nonNull(routingContext.pathParams())) {
 			routingContext.pathParams()

@@ -14,6 +14,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
+import nl.webprint.adapter.http.FileUpload;
 
 /**
  * A printing job repository that persists its data on the file system.
@@ -25,7 +26,7 @@ import io.vertx.reactivex.core.buffer.Buffer;
  */
 public class DirectoryBasedPrintingJobRepository implements PrintingJobRepository {
 
-	public static final String PRINTING_JOB_DIR = "/var/uploads/";
+	public static final String PRINTING_JOB_DIR = "/var/printing-queue/";
 	private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryBasedPrintingJobRepository.class);
 	
 	private final Vertx vertx;
@@ -107,14 +108,14 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 	}
 
 	@Override
-	public void add(UploadedFile uploadedFile, Handler<AsyncResult<Void>> resultHandler) {
+	public void add(FileUpload uploadedFile, Handler<AsyncResult<PrintingJob>> resultHandler) {
 		
 		final PrintingJob printingJob = PrintingJob.from(uploadedFile, PRINTING_JOB_DIR);		
 		Buffer bufferData = Buffer.buffer(printingJob.toJson().encodePrettily());
 		
 		vertx.fileSystem()
 			.rxMkdir(printingJob.getFilePath())
-			.andThen(vertx.fileSystem().rxCopy(uploadedFile.getUploadedFilePath(),
+			.andThen(vertx.fileSystem().rxCopy(uploadedFile.getFullFilePath(),
 				printingJob.getFilePath()))
 			.andThen(vertx.fileSystem().rxCreateFile(printingJob.getFilePath() + "/metadata.json"))
 			.andThen(vertx.fileSystem().rxOpen(printingJob.getFilePath() + "/metadata.json", 
@@ -126,7 +127,7 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 			.subscribe(
 				() -> {
 					LOGGER.info("Created printing job for file=" + printingJob.getFileName());
-					resultHandler.handle(Future.succeededFuture());
+					resultHandler.handle(Future.succeededFuture(printingJob));
 				},
 				throwable -> {
 					LOGGER.error("Could not create a printing job for file=" + printingJob.getFileName());

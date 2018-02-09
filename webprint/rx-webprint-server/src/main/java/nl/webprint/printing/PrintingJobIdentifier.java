@@ -33,6 +33,13 @@ public class PrintingJobIdentifier {
 			.put("identifier", identifier.toString());
 	}
 	
+	public static PrintingJobIdentifier from(final UUID printingJobIdentifier) {
+		return PrintingJobIdentifier
+			.builder()
+			.identifier(printingJobIdentifier)
+			.build();
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}

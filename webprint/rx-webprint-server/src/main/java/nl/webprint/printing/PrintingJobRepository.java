@@ -8,6 +8,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import nl.webprint.adapter.http.FileUpload;
 import nl.webprint.configuration.AddressConfiguration;
 
 /**
@@ -22,19 +23,19 @@ public interface PrintingJobRepository {
 
 	String EVENT_BUS_ADDRESS = AddressConfiguration.PRINTINGJOB_REPOSITORY.getAddress();
 	
-	static PrintingJob create(Vertx vertx) {
-		throw new UnsupportedOperationException();
+	static PrintingJobRepository create(Vertx vertx) {
+		return new DirectoryBasedPrintingJobRepository(vertx);
 	}
 	
-	static PrintingJob createProxy(Vertx vertx) {
-		throw new UnsupportedOperationException();
+	static PrintingJobRepository createProxy(Vertx vertx) {
+		return new PrintingJobRepositoryVertxEBProxy(vertx, EVENT_BUS_ADDRESS);
 	}	
 	
 	void findAll(Handler<AsyncResult<List<PrintingJob>>> resultHandler);
 	
 	void findById(PrintingJobIdentifier identifier, Handler<AsyncResult<PrintingJob>> resultHandler);
 	
-	void add(UploadedFile uploadedFile, Handler<AsyncResult<Void>> resultHandler);
+	void add(FileUpload uploadedFile, Handler<AsyncResult<PrintingJob>> resultHandler);
 	
 	void delete(PrintingJobIdentifier identifier, Handler<AsyncResult<Void>> resultHandler);
 }

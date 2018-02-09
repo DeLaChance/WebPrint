@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+import nl.webprint.adapter.http.FileUpload;
 
 @DataObject
 public class PrintingJob {
@@ -43,7 +44,7 @@ public class PrintingJob {
 		this.completedTime = object.getLong("completedTime");
 	}
 	
-	public PrintingJob(Builder builder) {
+	private PrintingJob(Builder builder) {
 		this.identifier = builder.identifier;
 		this.fileName = builder.fileName;
 		this.filePath = builder.filePath;
@@ -80,7 +81,7 @@ public class PrintingJob {
 		return JsonObject.mapFrom(this);
 	}
 
-	public static PrintingJob from(UploadedFile uploadedFile, String targetDirectory) {
+	public static PrintingJob from(FileUpload uploadedFile, String targetDirectory) {
 		final UUID uuid = UUID.randomUUID();
 		final PrintingJobIdentifier identifier = PrintingJobIdentifier.builder()
 			.identifier(uuid)
