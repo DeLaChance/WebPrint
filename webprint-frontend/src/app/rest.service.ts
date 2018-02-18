@@ -31,11 +31,11 @@ export class RestService {
     this.BASE_URL = "http://localhost:8081";
 
     // Alternative verticle to test RxJava
-    this.RX_BASE_URL = "http://localhost:8082";
+    this.RX_BASE_URL = "http://localhost:8181";
   }
 
   fetchPrintingJobs() {
-    return this.http.get<RawPrintingJobs>(this.BASE_URL + '/api/job')
+    return this.http.get<RawPrintingJobs>(this.RX_BASE_URL + '/api/job')
       .map(data => {
         var printingJobs: PrintingJob[] = [];
 
