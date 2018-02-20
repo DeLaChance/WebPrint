@@ -9,6 +9,10 @@
     </encoder>
   </appender>
 
+  <logger name="io.vertx" level="INFO" additivity="false">
+    <appender-ref ref="STDOUT" />
+  </logger>
+
   <logger name="nl.webprint" level="DEBUG" additivity="false">
     <appender-ref ref="STDOUT" />
   </logger>

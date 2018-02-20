@@ -90,7 +90,7 @@ public class PrintingJob {
 		return PrintingJob.builder()
 			.identifier(identifier)
 			.fileName(uploadedFile.getFileName())
-			.filePath(targetDirectory + "/" + uuid.toString())
+			.filePath(targetDirectory + uuid.toString() + "/")
 			.createdTime(Instant.now().getEpochSecond())
 			.startedTime(null)
 			.completedTime(null)

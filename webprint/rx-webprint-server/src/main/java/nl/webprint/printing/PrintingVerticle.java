@@ -2,6 +2,7 @@ package nl.webprint.printing;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -77,6 +78,8 @@ public class PrintingVerticle extends AbstractVerticle {
 		
 		// DELETION
 		this.vertx.eventBus().<JsonObject>consumer(AddressConfiguration.DELETE_PRINTING_JOB_SERVICE.getAddress(), message -> {
+			LOGGER.debug("Deletion: " + message.body().encode());
+			
 			final Optional<PrintingJobIdentifier> optionalIdentifier = Optional.ofNullable(message)
 					.map(Message::body)
 					.map(obj -> obj.getString("id"))
@@ -98,9 +101,12 @@ public class PrintingVerticle extends AbstractVerticle {
 		
 		// INSERTION
 		this.vertx.eventBus().<JsonObject>consumer(AddressConfiguration.ADD_PRINTING_JOB_SERVICE.getAddress(), message -> {
+			LOGGER.debug("Insertion: " + message.body().encode());
+			
 			final Optional<FileUpload> optional = Optional.ofNullable(message)
 				.map(Message::body)
 				.map(obj -> obj.getJsonArray("fileUploads"))
+				.filter(not(JsonArray::isEmpty))
 				.map(obj -> obj.getJsonObject(0))
 				.map(obj -> new FileUpload(obj));
 			
@@ -114,6 +120,12 @@ public class PrintingVerticle extends AbstractVerticle {
 				message.fail(304, "No file uploaded");
 			}
 		});
+		
+		startFuture.complete();
+	}
+
+	public static <T> Predicate<T> not(Predicate<T> t) {
+	    return t.negate();
 	}
 
 }

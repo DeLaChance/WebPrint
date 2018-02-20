@@ -65,8 +65,11 @@ public class HttpServerVerticle extends AbstractVerticle {
 					.requestHandler(router::accept)
 					.listen();
 				
+				startFuture.complete();
+				
 			}, throwable -> {
 				LOGGER.error("Could not start HTTP server ", throwable);
+				startFuture.fail(throwable);
 			});
 	}	
 	
@@ -88,15 +91,18 @@ public class HttpServerVerticle extends AbstractVerticle {
 			AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));
 		router.route("/api/job/:id").method(HttpMethod.GET).handler(request -> sendToEventBus(request, 
 				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));
-		router.route("/api/job").method(HttpMethod.DELETE).handler(request -> sendToEventBus(request, 
-				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));
+		router.route("/api/job/:id").method(HttpMethod.DELETE).handler(request -> sendToEventBus(request, 
+				AddressConfiguration.DELETE_PRINTING_JOB_SERVICE.getAddress()));
+		
 		router.route("/api/job").method(HttpMethod.POST)
-			.handler(request -> sendToEventBus(request, 
-				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()))
 			.handler(BodyHandler.create()
 				.setUploadsDirectory(UPLOADS_DIRECTORY)
 				.setMergeFormAttributes(true)
 			);
+		
+		router.route("/api/job").method(HttpMethod.POST)
+		.handler(request -> sendToEventBus(request, 
+			AddressConfiguration.ADD_PRINTING_JOB_SERVICE.getAddress()));		
 		
 		return router;
 	}
@@ -136,16 +142,20 @@ public class HttpServerVerticle extends AbstractVerticle {
 	}
 	
 	private JsonObject createPayload(final RoutingContext routingContext) {
+		
 		final JsonObject payload = new JsonObject();
 		
-		if( routingContext.getBody().length() > 0 ) {
-			payload.mergeIn(routingContext.getBodyAsJson());
+		LOGGER.debug(routingContext.getBodyAsString());
+		
+		if( Objects.nonNull(routingContext.getBodyAsString()) ) {
+			payload.put("body", routingContext.getBodyAsString());
 		}
 		
 		final JsonArray fileUploads = new JsonArray();
 		routingContext.fileUploads()
 			.stream()
 			.map(FileUpload::from)
+			.map(FileUpload::toJson)
 			.forEach(fileUpload -> {
 				fileUploads.add(fileUpload);
 			});

@@ -1,7 +1,6 @@
-- Add RX-module
-- Front-end map is not a function
-- Integration testing (stuff from work)
+- Bugfix + test RX-module
+- Front-end map is not a function (fix bug)
+- Gatling performance/integration testing (stuff from work)
 - SockJS live updating (active printing job)
-- Refactor code
 
 - Dockerize app

@@ -62,6 +62,7 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 					resultHandler.handle(Future.succeededFuture(printingJobs));
 				},
 				throwable -> {
+					LOGGER.error("Error querying the printing jobs: ", throwable);
 					resultHandler.handle(Future.failedFuture(throwable));
 				}
 			);
@@ -97,7 +98,7 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 				.flatMapMaybe(contents ->
 					Optional.ofNullable(contents)
 					.map(Buffer::toJsonObject)
-					.map(obj -> obj.mapTo(PrintingJob.class))
+					.map(obj -> new PrintingJob(obj))
 					.map(Maybe::just)
 					.orElse(Maybe.empty())
 				);
@@ -112,13 +113,13 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 		
 		final PrintingJob printingJob = PrintingJob.from(uploadedFile, PRINTING_JOB_DIR);		
 		Buffer bufferData = Buffer.buffer(printingJob.toJson().encodePrettily());
-		
+
 		vertx.fileSystem()
-			.rxMkdir(printingJob.getFilePath())
+			.rxMkdirs(printingJob.getFilePath())
 			.andThen(vertx.fileSystem().rxCopy(uploadedFile.getFullFilePath(),
-				printingJob.getFilePath()))
-			.andThen(vertx.fileSystem().rxCreateFile(printingJob.getFilePath() + "/metadata.json"))
-			.andThen(vertx.fileSystem().rxOpen(printingJob.getFilePath() + "/metadata.json", 
+				printingJob.getFilePath() + uploadedFile.getFileName()))
+			.andThen(vertx.fileSystem().rxCreateFile(printingJob.getFilePath() + "metadata.json"))
+			.andThen(vertx.fileSystem().rxOpen(printingJob.getFilePath() + "metadata.json", 
 				new OpenOptions().setRead(true).setWrite(true))
 			)
 			.flatMapCompletable(asyncFile -> 
@@ -130,7 +131,7 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 					resultHandler.handle(Future.succeededFuture(printingJob));
 				},
 				throwable -> {
-					LOGGER.error("Could not create a printing job for file=" + printingJob.getFileName());
+					LOGGER.error("Could not create a printing job for file=" + printingJob.getFileName(), throwable);
 					resultHandler.handle(Future.failedFuture(throwable));
 				}
 			);
@@ -141,14 +142,14 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 	public void delete(PrintingJobIdentifier identifier, Handler<AsyncResult<Void>> resultHandler) {
 		
 		vertx.fileSystem()
-			.rxDeleteRecursive(PRINTING_JOB_DIR + identifier.getIdentifier(), true)
+			.rxDeleteRecursive(PRINTING_JOB_DIR + identifier.getIdentifier() + "/", true)
 			.subscribe(
 				() -> {
 					LOGGER.info("Deleted printing job with id=" + identifier.getIdentifier().toString());
 					resultHandler.handle(Future.succeededFuture());
 				},
 				throwable -> {
-					LOGGER.error("Could not delete the printing job for id=" + identifier.getIdentifier().toString());
+					LOGGER.error("Could not delete the printing job for id=" + identifier.getIdentifier().toString(), throwable);
 					resultHandler.handle(Future.failedFuture(throwable));
 				}
 			);

@@ -20,7 +20,7 @@ public class PrintingJobIdentifier {
 		this.identifier = UUID.fromString(object.getString("identifier"));
 	}
 	
-	public PrintingJobIdentifier(Builder builder) {
+	private PrintingJobIdentifier(Builder builder) {
 		this.identifier = builder.identifier;
 	}
 

@@ -170,7 +170,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/draganddrop/draganddrop.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <div class=\"center\">\n    <!-- Classical way to do it  -->\n    <iframe name=\"hiddenFrame\" width=\"0\" height=\"0\" border=\"0\" style=\"display: none;\"></iframe>\n    <form action=\"http://localhost:8081/api/job\" ENCTYPE=\"multipart/form-data\" method=\"POST\" name=\"classic\" target=\"hiddenFrame\">\n        Upload a file:<input type=\"file\" name=\"myfile\"/><br>\n        <button class=\"btn btn-primary\" type=\"submit\">Upload files</button>\n    </form>\n  </div>\n</div>\n"
+module.exports = "<div class=\"container\">\n  <div class=\"center\">\n    <!-- Classical way to do it  -->\n    <iframe name=\"hiddenFrame\" width=\"0\" height=\"0\" border=\"0\" style=\"display: none;\"></iframe>\n    <form action=\"http://localhost:8181/api/job\" ENCTYPE=\"multipart/form-data\" method=\"POST\" name=\"classic\" target=\"hiddenFrame\">\n        Upload a file:<input type=\"file\" name=\"myfile\"/><br>\n        <button class=\"btn btn-primary\" type=\"submit\">Upload files</button>\n    </form>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -560,10 +560,10 @@ var RestService = (function () {
         this.http = http;
         this.BASE_URL = "http://localhost:8081";
         // Alternative verticle to test RxJava
-        this.RX_BASE_URL = "http://localhost:8082";
+        this.RX_BASE_URL = "http://localhost:8181";
     }
     RestService.prototype.fetchPrintingJobs = function () {
-        return this.http.get(this.BASE_URL + '/api/job')
+        return this.http.get(this.RX_BASE_URL + '/api/job')
             .map(function (data) {
             var printingJobs = [];
             data.printingJobs.forEach(function (rawPrintingJob) {
