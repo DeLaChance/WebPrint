@@ -35,7 +35,13 @@ public interface PrintingJobRepository {
 	
 	void findById(PrintingJobIdentifier identifier, Handler<AsyncResult<PrintingJob>> resultHandler);
 	
+	void findByIdOrError(PrintingJobIdentifier identifier, Handler<AsyncResult<PrintingJob>> resultHandler);
+	
 	void add(FileUpload uploadedFile, Handler<AsyncResult<PrintingJob>> resultHandler);
 	
 	void delete(PrintingJobIdentifier identifier, Handler<AsyncResult<Void>> resultHandler);
+	
+	void update(PrintingJob printingJob, Handler<AsyncResult<Void>> resultHandler);
+	
+	
 }

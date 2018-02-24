@@ -40,6 +40,11 @@ public class PrintingJobIdentifier {
 			.build();
 	}
 	
+	@Override
+	public String toString() {
+		return this.identifier.toString();
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}

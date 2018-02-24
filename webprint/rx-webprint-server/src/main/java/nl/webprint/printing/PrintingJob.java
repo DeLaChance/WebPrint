@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.reactivex.Single;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 import nl.webprint.adapter.http.FileUpload;
@@ -91,11 +92,21 @@ public class PrintingJob {
 			.identifier(identifier)
 			.fileName(uploadedFile.getFileName())
 			.filePath(targetDirectory + uuid.toString() + "/")
-			.createdTime(Instant.now().getEpochSecond())
+			.createdTime(Instant.now().toEpochMilli())
 			.startedTime(null)
 			.completedTime(null)
 			.build();
 	}	
+
+	public Single<PrintingJob> start() {
+		this.startedTime = Instant.now().toEpochMilli();
+		return Single.just(this);
+	}
+	
+	public Single<PrintingJob> complete() {
+		this.completedTime = Instant.now().toEpochMilli();
+		return Single.just(this);
+	}
 	
 	public static Builder builder() {
 		return new Builder();

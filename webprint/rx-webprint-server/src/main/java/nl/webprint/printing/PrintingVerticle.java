@@ -121,6 +121,61 @@ public class PrintingVerticle extends AbstractVerticle {
 			}
 		});
 		
+		// UPDATE
+		this.vertx.eventBus().<JsonObject>consumer(AddressConfiguration.START_PRINTING_JOB_SERVICE.getAddress(), message -> {
+			LOGGER.debug("Update (start): " + message.body().encode());
+			
+			final Optional<PrintingJobIdentifier> optionalIdentifier = Optional.ofNullable(message)
+					.map(Message::body)
+					.map(obj -> obj.getString("id"))
+					.filter(UUIDConverter::canConvert)
+					.map(UUIDConverter::convert)
+					.map(PrintingJobIdentifier::from);
+			
+			if( optionalIdentifier.isPresent() ) {
+				this.printingJobRepository.rxFindByIdOrError(optionalIdentifier.get())
+					.flatMap(printingJob -> 
+						printingJob.start()
+					)
+					.subscribe(
+						printingJob -> {
+							this.vertx.eventBus().publish("notifications.printing-job", printingJob.toJson());
+							message.reply(printingJob.toJson());
+						},
+						throwable -> {
+							message.fail(404, "Could not be found");
+						}
+					);
+			}
+		});
+		
+		this.vertx.eventBus().<JsonObject>consumer(AddressConfiguration.COMPLETE_PRINTING_JOB_SERVICE.getAddress(), message -> {
+			LOGGER.debug("Update (complete): " + message.body().encode());
+			
+			final Optional<PrintingJobIdentifier> optionalIdentifier = Optional.ofNullable(message)
+					.map(Message::body)
+					.map(obj -> obj.getString("id"))
+					.filter(UUIDConverter::canConvert)
+					.map(UUIDConverter::convert)
+					.map(PrintingJobIdentifier::from);
+			
+			if( optionalIdentifier.isPresent() ) {
+				this.printingJobRepository.rxFindByIdOrError(optionalIdentifier.get())
+					.flatMap(printingJob -> 
+						printingJob.complete()
+					)
+					.subscribe(
+						printingJob -> {
+							this.vertx.eventBus().publish("notifications.printing-job", printingJob.toJson());
+							message.reply(printingJob.toJson());
+						},
+						throwable -> {
+							message.fail(404, "Could not be found");
+						}
+					);
+			}			
+		});		
+		
 		startFuture.complete();
 	}
 

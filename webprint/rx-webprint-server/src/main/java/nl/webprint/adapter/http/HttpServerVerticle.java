@@ -1,32 +1,30 @@
 package nl.webprint.adapter.http;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.reactivex.Completable;
-import io.vertx.reactivex.config.ConfigRetriever;
-import io.vertx.config.ConfigRetrieverOptions;
-import io.vertx.config.ConfigStoreOptions;
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.stomp.StompServerOptions;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.bridge.PermittedOptions;
+import io.vertx.ext.stomp.BridgeOptions;
+import io.vertx.ext.stomp.StompServer;
+import io.vertx.ext.stomp.StompServerHandler;
 import nl.webprint.configuration.AddressConfiguration;
 import nl.webprint.reactivex.configuration.ConfigurationRepository;
 
@@ -35,6 +33,8 @@ public class HttpServerVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
     public static final Integer TIME_OUT = 5000;
     public static final String UPLOADS_DIRECTORY = "/var/www/uploads/";
+    
+    public static final String STOMP_PROTOCOLS = "v10.stomp, v11.stomp, v12.stomp";
     
     private Integer port;
     private String hostname;
@@ -49,7 +49,7 @@ public class HttpServerVerticle extends AbstractVerticle {
 		this.configurationRepository = ConfigurationRepository.createProxy(this.vertx);
 		this.configurationRepository.rxRead("server")
 			.subscribe(configuration -> {
-								
+
 				this.port = configuration.getInteger("port");
 				this.hostname = configuration.getString("hostname");
 				
@@ -57,12 +57,14 @@ public class HttpServerVerticle extends AbstractVerticle {
 				
 				final HttpServerOptions httpServerOptions = new HttpServerOptions()
 					.setPort(this.port)
-					.setHost(this.hostname);
+					.setHost(this.hostname)
+					.setWebsocketSubProtocols(STOMP_PROTOCOLS);
 				
 				final Router router = this.generate();
 				this.vertx.getDelegate()
 					.createHttpServer(httpServerOptions)
 					.requestHandler(router::accept)
+					.websocketHandler(createWebSocketHandler())
 					.listen();
 				
 				startFuture.complete();
@@ -72,6 +74,25 @@ public class HttpServerVerticle extends AbstractVerticle {
 				startFuture.fail(throwable);
 			});
 	}	
+	
+	private Handler<ServerWebSocket> createWebSocketHandler() {
+		final BridgeOptions bridgeOptions = new BridgeOptions()
+			.addOutboundPermitted(
+					new PermittedOptions()
+						.setAddressRegex("notifications.printing-job*")
+				);
+		
+		final StompServerOptions stompServerOptions = new StompServerOptions()
+			.setPort(-1) // Disable the TCP port
+			.setWebsocketBridge(true) 
+			.setWebsocketPath("/stomp");
+		
+		return StompServer.create(vertx.getDelegate(), stompServerOptions)
+			.handler(StompServerHandler.create(
+				vertx.getDelegate()).bridge(bridgeOptions)
+			)
+			.webSocketHandler(); 
+	}
 	
 	private Router generate() {
 		final Router router = Router.router(this.vertx.getDelegate());
@@ -93,6 +114,11 @@ public class HttpServerVerticle extends AbstractVerticle {
 				AddressConfiguration.QUERY_PRINTING_JOB_SERVICE.getAddress()));
 		router.route("/api/job/:id").method(HttpMethod.DELETE).handler(request -> sendToEventBus(request, 
 				AddressConfiguration.DELETE_PRINTING_JOB_SERVICE.getAddress()));
+		router.route("/api/job/:id/start").method(HttpMethod.POST).handler(request -> sendToEventBus(request, 
+				AddressConfiguration.START_PRINTING_JOB_SERVICE.getAddress()));
+		router.route("/api/job/:id/complete").method(HttpMethod.POST).handler(request -> sendToEventBus(request, 
+				AddressConfiguration.COMPLETE_PRINTING_JOB_SERVICE.getAddress()));		
+		
 		
 		router.route("/api/job").method(HttpMethod.POST)
 			.handler(BodyHandler.create()

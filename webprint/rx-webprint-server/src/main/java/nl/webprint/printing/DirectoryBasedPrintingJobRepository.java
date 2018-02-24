@@ -86,6 +86,25 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 
 	}
 	
+
+	@Override
+	public void findByIdOrError(PrintingJobIdentifier identifier, Handler<AsyncResult<PrintingJob>> resultHandler) {
+		final String filePath = PRINTING_JOB_DIR + identifier.getIdentifier().toString() + "/metadata.json";
+		
+		this.vertx.fileSystem().rxReadFile(filePath).toCompletable()
+			.andThen(this.findByFilePath(filePath))
+			.subscribe(
+				printingJob -> {
+					// Result
+					resultHandler.handle(Future.succeededFuture(printingJob));
+				},
+				throwable -> {
+					// File does not exist
+					resultHandler.handle(Future.failedFuture(throwable));
+				}
+			);
+	}	
+	
 	private Maybe<PrintingJob> findByFilePath(final String filePath) {
 		
 		return vertx.fileSystem().rxExists(filePath)
@@ -153,6 +172,34 @@ public class DirectoryBasedPrintingJobRepository implements PrintingJobRepositor
 					resultHandler.handle(Future.failedFuture(throwable));
 				}
 			);
+		
+	}
+
+	@Override
+	public void update(PrintingJob printingJob, Handler<AsyncResult<Void>> resultHandler) {
+		final String filePath = PRINTING_JOB_DIR + printingJob.getIdentifier().toString() + "/metadata.json";
+
+		vertx.fileSystem()
+			.rxDelete(filePath)
+			.andThen(vertx.fileSystem().rxOpen(filePath, new OpenOptions().setRead(true).setWrite(true)))
+			.flatMapCompletable(asyncFile -> {
+				final String fileContents = printingJob.toJson().encodePrettily();
+				
+				asyncFile.write(Buffer.buffer(fileContents));
+				return asyncFile.rxClose();
+			})
+			.subscribe(
+				() -> {
+					LOGGER.info("Updated the printing job id=" + printingJob.getIdentifier().toString());
+					resultHandler.handle(Future.succeededFuture());
+				},
+				throwable -> {
+					LOGGER.error("Could not update the printing job id=" + printingJob.getIdentifier().toString(), throwable);
+					resultHandler.handle(Future.failedFuture(throwable));
+				}
+			);
+			
+		
 		
 	}
 
