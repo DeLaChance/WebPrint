@@ -91,12 +91,14 @@ var AppComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__overview_overview_component__ = __webpack_require__("../../../../../src/app/overview/overview.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__page_not_found_page_not_found_component__ = __webpack_require__("../../../../../src/app/page-not-found/page-not-found.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__rest_service__ = __webpack_require__("../../../../../src/app/rest.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__data_service__ = __webpack_require__("../../../../../src/app/data.service.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -138,11 +140,71 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_4__angular_router__["a" /* RouterModule */].forRoot(appRoutes, { enableTracing: true } // <-- debugging purposes only
                 )
             ],
-            providers: [__WEBPACK_IMPORTED_MODULE_12__rest_service__["a" /* RestService */]],
+            providers: [__WEBPACK_IMPORTED_MODULE_12__rest_service__["a" /* RestService */], __WEBPACK_IMPORTED_MODULE_13__data_service__["a" /* DataService */]],
             bootstrap: [__WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* AppComponent */]]
         })
     ], AppModule);
     return AppModule;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/data.service.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DataService; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__printing_job__ = __webpack_require__("../../../../../src/app/printing-job.ts");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var DataService = (function () {
+    function DataService() {
+        this.dataListeners = [];
+    }
+    DataService.prototype.addListener = function (listener) {
+        this.dataListeners.push(listener);
+    };
+    DataService.prototype.callListeners = function () {
+        var _this = this;
+        this.dataListeners.forEach(function (listener) {
+            listener.update(_this.printingJobs);
+        });
+    };
+    DataService.prototype.loadPrintingJobs = function (rawPrintingJobs) {
+        this.setPrintingJobs(this.unwrap(rawPrintingJobs));
+        this.callListeners();
+    };
+    DataService.prototype.unwrap = function (rawPrintingJobs) {
+        var printingJobs = [];
+        rawPrintingJobs.jobs.forEach(function (rawPrintingJob) {
+            var printingJob = __WEBPACK_IMPORTED_MODULE_1__printing_job__["a" /* PrintingJob */].decode(rawPrintingJob);
+            printingJobs.push(printingJob);
+        });
+        return printingJobs;
+    };
+    DataService.prototype.setPrintingJobs = function (printingJobs) {
+        this.printingJobs = printingJobs;
+    };
+    DataService.prototype.getPrintingJobs = function () {
+        return this.printingJobs;
+    };
+    DataService = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
+        __metadata("design:paramtypes", [])
+    ], DataService);
+    return DataService;
 }());
 
 
@@ -250,7 +312,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/jobactivity/jobactivity.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div *ngIf=\"activeJob !== null; then thenBlock else elseBlock\"></div>\n<ng-template #thenBlock>\n  <table datatable class=\"table table-striped table-hover\">\n    <thead>\n      <tr>\n        <th scope=\"col\">Document</th>\n        <th scope=\"col\">Issued (yyyy-MM-dd)</th>\n        <th scope=\"col\">Started (yyyy-MM-dd)</th>\n        <th scope=\"col\">Completed (yyyy-MM-dd)</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td>{{ activeJob.name }}</td>\n        <td>{{ activeJob.created | date:'yyyy-MM-dd'}}</td>\n        <td>{{ activeJob.started | date:'yyyy-MM-dd'}}</td>\n        <td>{{ activeJob.completed | date:'yyyy-MM-dd' }}</td>\n      </tr>\n    </tbody>\n  </table>\n</ng-template>\n<ng-template #elseBlock>No active job at the moment</ng-template>\n"
+module.exports = "<div *ngIf=\"activeJob; then thenBlock else elseBlock\"></div>\n<ng-template #thenBlock>\n  <table datatable class=\"table table-striped table-hover\">\n    <thead>\n      <tr>\n        <th scope=\"col\">Document</th>\n        <th scope=\"col\">Issued (yyyy-MM-dd)</th>\n        <th scope=\"col\">Started (yyyy-MM-dd)</th>\n        <th scope=\"col\">Completed (yyyy-MM-dd)</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td>{{ activeJob.name }}</td>\n        <td>{{ activeJob.created | date:'yyyy-MM-dd'}}</td>\n        <td>{{ activeJob.started | date:'yyyy-MM-dd'}}</td>\n        <td>{{ activeJob.completed | date:'yyyy-MM-dd' }}</td>\n      </tr>\n    </tbody>\n  </table>\n</ng-template>\n<ng-template #elseBlock>No active job at the moment</ng-template>\n"
 
 /***/ }),
 
@@ -260,7 +322,7 @@ module.exports = "<div *ngIf=\"activeJob !== null; then thenBlock else elseBlock
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return JobactivityComponent; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__rest_service__ = __webpack_require__("../../../../../src/app/rest.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__data_service__ = __webpack_require__("../../../../../src/app/data.service.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -273,13 +335,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 var JobactivityComponent = (function () {
-    function JobactivityComponent(restService) {
-        this.restService = restService;
+    function JobactivityComponent(dataService) {
+        this.dataService = dataService;
     }
     JobactivityComponent.prototype.ngOnInit = function () {
+        this.dataService.addListener(this);
+    };
+    JobactivityComponent.prototype.update = function (printingJobs) {
         var _this = this;
-        this.restService.fetchActiveJob()
-            .subscribe(function (activeJob) { return _this.setActiveJob(activeJob); });
+        printingJobs.forEach(function (printingJob) {
+            if (printingJob.started !== null && printingJob.completed === null) {
+                _this.setActiveJob(printingJob);
+                return;
+            }
+        });
     };
     JobactivityComponent.prototype.setActiveJob = function (activeJob) {
         this.activeJob = activeJob;
@@ -290,7 +359,7 @@ var JobactivityComponent = (function () {
             template: __webpack_require__("../../../../../src/app/jobactivity/jobactivity.component.html"),
             styles: [__webpack_require__("../../../../../src/app/jobactivity/jobactivity.component.css")]
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__rest_service__["a" /* RestService */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */]])
     ], JobactivityComponent);
     return JobactivityComponent;
 }());
@@ -331,6 +400,7 @@ module.exports = "<table datatable class=\"table table-striped table-hover\">\n 
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return JoblistComponent; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__rest_service__ = __webpack_require__("../../../../../src/app/rest.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__data_service__ = __webpack_require__("../../../../../src/app/data.service.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -342,18 +412,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
+
 var JoblistComponent = (function () {
     // Methods
-    function JoblistComponent(restService) {
+    function JoblistComponent(restService, dataService) {
         this.restService = restService;
+        this.dataService = dataService;
     }
     JoblistComponent.prototype.ngOnInit = function () {
         var _this = this;
-        this.restService.fetchPrintingJobs().subscribe(function (data) { return _this.setPrintingJobs(data); });
+        this.dataService.addListener(this);
+        this.restService.fetchPrintingJobs()
+            .subscribe(function (data) { return _this.dataService.loadPrintingJobs(data); });
     };
-    JoblistComponent.prototype.setPrintingJobs = function (printingJobs) {
+    JoblistComponent.prototype.update = function (printingJobs) {
         this.printingJobs = printingJobs;
-        console.log("updated printingJobs " + printingJobs.length);
     };
     JoblistComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
@@ -361,7 +434,8 @@ var JoblistComponent = (function () {
             template: __webpack_require__("../../../../../src/app/joblist/joblist.component.html"),
             styles: [__webpack_require__("../../../../../src/app/joblist/joblist.component.css")]
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__rest_service__["a" /* RestService */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__rest_service__["a" /* RestService */],
+            __WEBPACK_IMPORTED_MODULE_2__data_service__["a" /* DataService */]])
     ], JoblistComponent);
     return JoblistComponent;
 }());
@@ -500,23 +574,17 @@ var PageNotFoundComponent = (function () {
 var PrintingJob = (function () {
     function PrintingJob() {
     }
-    PrintingJob.encode = function (printingJob) {
+    PrintingJob.decode = function (rawPrintingJob) {
         return {
-            name: printingJob.name,
-            id: printingJob.id,
-            created: printingJob.created.toString(),
-            started: printingJob.started.toString(),
-            completed: printingJob.completed.toString()
+            id: rawPrintingJob.identifier.identifier,
+            name: rawPrintingJob.fileName,
+            created: PrintingJob.toDate(rawPrintingJob.createdTime),
+            started: PrintingJob.toDate(rawPrintingJob.startedTime),
+            completed: PrintingJob.toDate(rawPrintingJob.completedTime)
         };
     };
-    PrintingJob.decode = function (printingJobJson) {
-        return {
-            id: printingJobJson.id,
-            name: printingJobJson.name,
-            created: new Date(printingJobJson.created),
-            started: new Date(printingJobJson.started),
-            completed: new Date(printingJobJson.completed)
-        };
+    PrintingJob.toDate = function (timeStamp) {
+        return timeStamp ? new Date(timeStamp) : null;
     };
     return PrintingJob;
 }());
@@ -532,7 +600,6 @@ var PrintingJob = (function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return RestService; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common_http__ = __webpack_require__("../../../common/esm5/http.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__printing_job__ = __webpack_require__("../../../../../src/app/printing-job.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -544,17 +611,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
-
-var RawPrintingJob = (function () {
-    function RawPrintingJob() {
-    }
-    return RawPrintingJob;
-}());
-var RawPrintingJobs = (function () {
-    function RawPrintingJobs() {
-    }
-    return RawPrintingJobs;
-}());
 var RestService = (function () {
     function RestService(http) {
         this.http = http;
@@ -563,26 +619,7 @@ var RestService = (function () {
         this.RX_BASE_URL = "http://localhost:8181";
     }
     RestService.prototype.fetchPrintingJobs = function () {
-        return this.http.get(this.RX_BASE_URL + '/api/job')
-            .map(function (data) {
-            var printingJobs = [];
-            data.printingJobs.forEach(function (rawPrintingJob) {
-                var printingJob = __WEBPACK_IMPORTED_MODULE_2__printing_job__["a" /* PrintingJob */].decode(rawPrintingJob);
-                printingJobs.push(printingJob);
-            });
-            return printingJobs;
-        });
-    };
-    RestService.prototype.fetchActiveJob = function () {
-        return this.http.get(this.RX_BASE_URL + '/api/job?active=true')
-            .map(function (data) {
-            if (data.printingJobs.length > 0) {
-                return __WEBPACK_IMPORTED_MODULE_2__printing_job__["a" /* PrintingJob */].decode(data.printingJobs[0]);
-            }
-            else {
-                return null;
-            }
-        });
+        return this.http.get(this.RX_BASE_URL + '/api/job');
     };
     RestService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
