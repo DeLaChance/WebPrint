@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.reactivex.Single;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -137,6 +138,10 @@ public class PrintingVerticle extends AbstractVerticle {
 					.flatMap(printingJob -> 
 						printingJob.start()
 					)
+					.flatMap(printingJob -> { 
+						return this.printingJobRepository.rxUpdate(printingJob)
+							.andThen(Single.just(printingJob));
+					})					
 					.subscribe(
 						printingJob -> {
 							this.vertx.eventBus().publish("notifications.printing-job", printingJob.toJson());
@@ -164,6 +169,10 @@ public class PrintingVerticle extends AbstractVerticle {
 					.flatMap(printingJob -> 
 						printingJob.complete()
 					)
+					.flatMap(printingJob -> { 
+						return this.printingJobRepository.rxUpdate(printingJob)
+							.andThen(Single.just(printingJob));
+					})
 					.subscribe(
 						printingJob -> {
 							this.vertx.eventBus().publish("notifications.printing-job", printingJob.toJson());

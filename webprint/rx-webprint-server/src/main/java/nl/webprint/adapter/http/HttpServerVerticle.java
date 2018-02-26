@@ -79,7 +79,7 @@ public class HttpServerVerticle extends AbstractVerticle {
 		final BridgeOptions bridgeOptions = new BridgeOptions()
 			.addOutboundPermitted(
 					new PermittedOptions()
-						.setAddressRegex("notifications.printing-job*")
+						.setAddressRegex("notifications.*")
 				);
 		
 		final StompServerOptions stompServerOptions = new StompServerOptions()
@@ -88,8 +88,8 @@ public class HttpServerVerticle extends AbstractVerticle {
 			.setWebsocketPath("/stomp");
 		
 		return StompServer.create(vertx.getDelegate(), stompServerOptions)
-			.handler(StompServerHandler.create(
-				vertx.getDelegate()).bridge(bridgeOptions)
+			.handler(StompServerHandler.create(vertx.getDelegate())
+					.bridge(bridgeOptions)
 			)
 			.webSocketHandler(); 
 	}

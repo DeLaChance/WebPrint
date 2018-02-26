@@ -8,6 +8,16 @@ export class PrintingJob {
   started: Date;
   completed: Date;
 
+  public static decodeJson(json: any): PrintingJob {
+    return {
+      id: json.identifier.identifier,
+      name: json.fileName,
+      created: PrintingJob.toDate(json.createdTime),
+      started: PrintingJob.toDate(json.startedTime),
+      completed: PrintingJob.toDate(json.completedTime)
+    };
+  }
+
   public static decode(rawPrintingJob: RawPrintingJob): PrintingJob {
     return {
       id: rawPrintingJob.identifier.identifier,
@@ -18,7 +28,7 @@ export class PrintingJob {
     };
   }
 
-  public static equals(p1 : PrintingJob, p2 : PrintingJob) {
+  public static equals(p1 : PrintingJob, p2 : PrintingJob) : boolean {
     if( p1 && p2 && p1.id && p2.id ) {
       return p1.id === p2.id;
     }
@@ -26,8 +36,8 @@ export class PrintingJob {
     return false;
   }
 
-  public toString() : String {
-    return JSON.stringify(this);
+  public static toString(p1 : PrintingJob) : String {
+    return JSON.stringify(p1);
   }
 
   static toDate(timeStamp: number): Date {

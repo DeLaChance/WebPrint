@@ -1,5 +1,1071 @@
 webpackJsonp(["vendor"],{
 
+/***/ "../../../../@stomp/ng2-stompjs/@stomp/ng2-stompjs.es5.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export StompRService */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return StompService; });
+/* unused harmony export StompState */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return StompConfig; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__ = __webpack_require__("../../../../rxjs/_esm5/BehaviorSubject.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_Subject__ = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_filter__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/filter.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_first__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/first.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_share__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/share.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__stomp_stompjs_index__ = __webpack_require__("../../../../@stomp/stompjs/index.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__stomp_stompjs_index___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__stomp_stompjs_index__);
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+
+
+
+
+var StompState = {};
+StompState.CLOSED = 0;
+StompState.TRYING = 1;
+StompState.CONNECTED = 2;
+StompState.DISCONNECTING = 3;
+StompState[StompState.CLOSED] = "CLOSED";
+StompState[StompState.TRYING] = "TRYING";
+StompState[StompState.CONNECTED] = "CONNECTED";
+StompState[StompState.DISCONNECTING] = "DISCONNECTING";
+/**
+ * Angular2 STOMP Raw Service using \@stomp/stomp.js
+ *
+ * \@description This service handles subscribing to a
+ * message queue using the stomp.js library, and returns
+ * values via the ES6 Observable specification for
+ * asynchronous value streaming by wiring the STOMP
+ * messages into an observable.
+ *
+ * If you will like to pass the configuration as a dependency,
+ * please use StompService class.
+ */
+var StompRService = (function () {
+    /**
+     * Constructor
+     *
+     * See README and samples for configuration examples
+     */
+    function StompRService() {
+        var _this = this;
+        /**
+         * Internal array to hold locally queued messages when STOMP broker is not connected.
+         */
+        this.queuedMessages = [];
+        /**
+         * Callback Functions
+         *
+         * Note the method signature: () => preserves lexical scope
+         * if we need to use this.x inside the function
+         */
+        this.debug = function (args) {
+            console.log(new Date(), args);
+        };
+        /**
+         * Callback run on successfully connecting to server
+         */
+        this.on_connect = function (frame) {
+            _this.debug('Connected');
+            _this._serverHeadersBehaviourSubject.next(frame.headers);
+            // Indicate our connected state to observers
+            _this.state.next(StompState.CONNECTED);
+        };
+        /**
+         * Handle errors from stomp.js
+         */
+        this.on_error = function (error) {
+            // Trigger the error subject
+            _this.errorSubject.next(error);
+            if (typeof error === 'object') {
+                error = error.body;
+            }
+            _this.debug("Error: " + error);
+            // Check for dropped connection and try reconnecting
+            if (!_this.client.connected) {
+                // Reset state indicator
+                _this.state.next(StompState.CLOSED);
+            }
+        };
+        this.state = new __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__["a" /* BehaviorSubject */](StompState.CLOSED);
+        this.connectObservable = this.state
+            .filter(function (currentState) {
+            return currentState === StompState.CONNECTED;
+        });
+        // Setup sending queuedMessages
+        this.connectObservable.subscribe(function () {
+            _this.sendQueuedMessages();
+        });
+        this._serverHeadersBehaviourSubject = new __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__["a" /* BehaviorSubject */](null);
+        this.serverHeadersObservable = this._serverHeadersBehaviourSubject
+            .filter(function (headers) {
+            return headers !== null;
+        });
+        this.errorSubject = new __WEBPACK_IMPORTED_MODULE_3_rxjs_Subject__["a" /* Subject */]();
+    }
+    Object.defineProperty(StompRService.prototype, "config", {
+        /**
+         * Set configuration
+         * @param {?} value
+         * @return {?}
+         */
+        set: function (value) {
+            this._config = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Initialize STOMP Client
+     * @return {?}
+     */
+    StompRService.prototype.initStompClient = function () {
+        // disconnect if connected
+        this.disconnect();
+        // url takes precedence over socketFn
+        if (typeof (this._config.url) === 'string') {
+            this.client = Object(__WEBPACK_IMPORTED_MODULE_7__stomp_stompjs_index__["client"])(this._config.url);
+        }
+        else {
+            this.client = Object(__WEBPACK_IMPORTED_MODULE_7__stomp_stompjs_index__["over"])(this._config.url);
+        }
+        // Configure client heart-beating
+        this.client.heartbeat.incoming = this._config.heartbeat_in;
+        this.client.heartbeat.outgoing = this._config.heartbeat_out;
+        // Auto reconnect
+        this.client.reconnect_delay = this._config.reconnect_delay;
+        if (!this._config.debug) {
+            this.debug = function () { };
+        }
+        // Set function to debug print messages
+        this.client.debug = this.debug;
+        // Default messages
+        this.setupOnReceive();
+        // Receipts
+        this.setupReceipts();
+    };
+    /**
+     * Perform connection to STOMP broker
+     * @return {?}
+     */
+    StompRService.prototype.initAndConnect = function () {
+        this.initStompClient();
+        if (!this._config.headers) {
+            this._config.headers = {};
+        }
+        // Attempt connection, passing in a callback
+        this.client.connect(this._config.headers, this.on_connect, this.on_error);
+        this.debug('Connecting...');
+        this.state.next(StompState.TRYING);
+    };
+    /**
+     * Disconnect the connection to the STOMP broker and clean up,
+     * not sure how this method will get called, if ever.
+     * Call this method only if you know what you are doing.
+     * @return {?}
+     */
+    StompRService.prototype.disconnect = function () {
+        var _this = this;
+        // Disconnect if connected. Callback will set CLOSED state
+        if (this.client && this.client.connected) {
+            // Notify observers that we are disconnecting!
+            this.state.next(StompState.DISCONNECTING);
+            this.client.disconnect(function () { return _this.state.next(StompState.CLOSED); });
+        }
+    };
+    /**
+     * The current connection status with the STOMP broker
+     * @return {?}
+     */
+    StompRService.prototype.connected = function () {
+        return this.state.getValue() === StompState.CONNECTED;
+    };
+    /**
+     * Send a message to a named destination. The message must be string.
+     *
+     * The message will get locally queued if the STOMP broker is not connected. Attempt
+     * will be made to publish queued messages as soon as the broker gets connected.
+     *
+     * @param {?} queueName
+     * @param {?} message
+     * @param {?=} headers
+     * @return {?}
+     */
+    StompRService.prototype.publish = function (queueName, message, headers) {
+        if (headers === void 0) { headers = {}; }
+        if (this.connected()) {
+            this.client.send(queueName, headers, message);
+        }
+        else {
+            this.debug("Not connected, queueing " + message);
+            this.queuedMessages.push({ queueName: /** @type {?} */ (queueName), message: /** @type {?} */ (message), headers: headers });
+        }
+    };
+    /**
+     * Send queued messages
+     * @return {?}
+     */
+    StompRService.prototype.sendQueuedMessages = function () {
+        var /** @type {?} */ queuedMessages = this.queuedMessages;
+        this.queuedMessages = [];
+        this.debug("Will try sending queued messages " + queuedMessages);
+        for (var _i = 0, queuedMessages_1 = queuedMessages; _i < queuedMessages_1.length; _i++) {
+            var queuedMessage = queuedMessages_1[_i];
+            this.debug("Attempting to send " + queuedMessage);
+            this.publish(queuedMessage.queueName, queuedMessage.message, queuedMessage.headers);
+        }
+    };
+    /**
+     * Subscribe to server message queues
+     *
+     * This method can safely be called even when STOMP broker is not connected. Further
+     * if the underlying STOMP connection drops and reconnects, it will resubscribe transparently.
+     *
+     * If a header field 'ack' is not explicitly passed, 'ack' will be set to 'auto'. If you
+     * do not understand what it means, please leave it as is.
+     *
+     * Please note, however, while working with temporary queues, where the subscription request
+     * creates the
+     * underlying queue, during reconnect it might miss messages. This issue is not specific
+     * to this library but the way STOMP brokers are designed to work.
+     *
+     * @param {?} queueName
+     * @param {?=} headers
+     * @return {?}
+     */
+    StompRService.prototype.subscribe = function (queueName, headers) {
+        var _this = this;
+        if (headers === void 0) { headers = {}; }
+        /* Well the logic is complicated but works beautifully. RxJS is indeed wonderful.
+         *
+         * We need to activate the underlying subscription immediately if Stomp is connected. If not it should
+         * subscribe when it gets next connected. Further it should re establish the subscription whenever Stomp
+         * successfully reconnects.
+         *
+         * Actual implementation is simple, we filter the BehaviourSubject 'state' so that we can trigger whenever Stomp is
+         * connected. Since 'state' is a BehaviourSubject, if Stomp is already connected, it will immediately trigger.
+         *
+         * The observable that we return to caller remains same across all reconnects, so no special handling needed at
+         * the message subscriber.
+         */
+        this.debug("Request to subscribe " + queueName);
+        // By default auto acknowledgement of messages
+        if (!headers['ack']) {
+            headers['ack'] = 'auto';
+        }
+        var /** @type {?} */ coldObservable = __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__["a" /* Observable */].create(function (messages) {
+            /*
+             * These variables will be used as part of the closure and work their magic during unsubscribe
+             */
+            var /** @type {?} */ stompSubscription;
+            var /** @type {?} */ stompConnectedSubscription;
+            stompConnectedSubscription = _this.connectObservable
+                .subscribe(function () {
+                _this.debug("Will subscribe to " + queueName);
+                stompSubscription = _this.client.subscribe(queueName, function (message) {
+                    messages.next(message);
+                }, headers);
+            });
+            return function () {
+                _this.debug("Stop watching connection state (for " + queueName + ")");
+                stompConnectedSubscription.unsubscribe();
+                if (_this.state.getValue() === StompState.CONNECTED) {
+                    _this.debug("Will unsubscribe from " + queueName + " at Stomp");
+                    stompSubscription.unsubscribe();
+                }
+                else {
+                    _this.debug("Stomp not connected, no need to unsubscribe from " + queueName + " at Stomp");
+                }
+            };
+        });
+        /**
+         * Important - convert it to hot Observable - otherwise, if the user code subscribes
+         * to this observable twice, it will subscribe twice to Stomp broker. (This was happening in the current example).
+         * A long but good explanatory article at https://medium.com/@benlesh/hot-vs-cold-observables-f8094ed53339
+         */
+        return coldObservable.share();
+    };
+    /**
+     * Handle messages to default queue, it will include any unhandled messages. We can use this for
+     * RPC type communications.
+     * @return {?}
+     */
+    StompRService.prototype.setupOnReceive = function () {
+        var _this = this;
+        this.defaultMessagesObservable = new __WEBPACK_IMPORTED_MODULE_3_rxjs_Subject__["a" /* Subject */]();
+        this.client.onreceive = function (message) {
+            _this.defaultMessagesObservable.next(message);
+        };
+    };
+    /**
+     * Emit all receipts.
+     * @return {?}
+     */
+    StompRService.prototype.setupReceipts = function () {
+        var _this = this;
+        this.receiptsObservable = new __WEBPACK_IMPORTED_MODULE_3_rxjs_Subject__["a" /* Subject */]();
+        this.client.onreceipt = function (frame) {
+            _this.receiptsObservable.next(frame);
+        };
+    };
+    /**
+     * Wait for receipt, this indicates that server has carried out the related operation
+     * @param {?} receiptId
+     * @param {?} callback
+     * @return {?}
+     */
+    StompRService.prototype.waitForReceipt = function (receiptId, callback) {
+        this.receiptsObservable.filter(function (frame) {
+            return frame.headers['receipt-id'] === receiptId;
+        }).first().subscribe(function (frame) {
+            callback();
+        });
+    };
+    return StompRService;
+}());
+StompRService.decorators = [
+    { type: __WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */] },
+];
+/**
+ * @nocollapse
+ */
+StompRService.ctorParameters = function () { return []; };
+/**
+ * Represents a configuration object for the
+ * STOMPService to connect to.
+ */
+var StompConfig = (function () {
+    function StompConfig() {
+    }
+    return StompConfig;
+}());
+StompConfig.decorators = [
+    { type: __WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */] },
+];
+/**
+ * @nocollapse
+ */
+StompConfig.ctorParameters = function () { return []; };
+/**
+ * Angular2 STOMP Service using \@stomp/stomp.js
+ *
+ * \@description This service handles subscribing to a
+ * message queue using the stomp.js library, and returns
+ * values via the ES6 Observable specification for
+ * asynchronous value streaming by wiring the STOMP
+ * messages into an observable.
+ *
+ * If you want to manually configure and initialize the service
+ * please use StompRService
+ */
+var StompService = (function (_super) {
+    __extends(StompService, _super);
+    /**
+     * Constructor
+     *
+     * See README and samples for configuration examples
+     * @param {?} config
+     */
+    function StompService(config) {
+        var _this = _super.call(this) || this;
+        _this.config = config;
+        _this.initAndConnect();
+        return _this;
+    }
+    return StompService;
+}(StompRService));
+StompService.decorators = [
+    { type: __WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */] },
+];
+/**
+ * @nocollapse
+ */
+StompService.ctorParameters = function () { return [
+    { type: StompConfig, },
+]; };
+/**
+ * Generated bundle index. Do not edit.
+ */
+
+//# sourceMappingURL=ng2-stompjs.es5.js.map
+
+
+/***/ }),
+
+/***/ "../../../../@stomp/stompjs/index.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+// Copyright (C) 2013 [Jeff Mesnil](http://jmesnil.net/)
+//
+//   Stomp Over WebSocket http://www.jmesnil.net/stomp-websocket/doc/ | Apache License V2.0
+//
+// The library can be used in node.js app to connect to STOMP brokers over TCP 
+// or Web sockets.
+
+// Root of the `stompjs module`
+
+var Stomp = __webpack_require__("../../../../@stomp/stompjs/lib/stomp.js");
+module.exports = Stomp.Stomp;
+
+module.exports.over = Stomp.Stomp.over;
+module.exports.client = Stomp.Stomp.client;
+
+if (typeof WebSocket !== 'function') {
+  Stomp.Stomp.WebSocketClass = __webpack_require__("../../../../websocket/lib/browser.js").w3cwebsocket;
+}
+
+
+/***/ }),
+
+/***/ "../../../../@stomp/stompjs/lib/stomp.js":
+/***/ (function(module, exports) {
+
+// Generated by CoffeeScript 1.12.6
+
+/*
+   Stomp Over WebSocket http://www.jmesnil.net/stomp-websocket/doc/ | Apache License V2.0
+
+   Copyright (C) 2010-2013 [Jeff Mesnil](http://jmesnil.net/)
+   Copyright (C) 2012 [FuseSource, Inc.](http://fusesource.com)
+   Copyright (C) 2017 [Deepak Kumar](https://www.kreatio.com)
+ */
+
+(function() {
+  var Byte, Client, Frame, Stomp,
+    hasProp = {}.hasOwnProperty,
+    slice = [].slice;
+
+  Byte = {
+    LF: '\x0A',
+    NULL: '\x00'
+  };
+
+  Frame = (function() {
+    var unmarshallSingle;
+
+    function Frame(command1, headers1, body1, escapeHeaderValues1) {
+      this.command = command1;
+      this.headers = headers1 != null ? headers1 : {};
+      this.body = body1 != null ? body1 : '';
+      this.escapeHeaderValues = escapeHeaderValues1 != null ? escapeHeaderValues1 : false;
+    }
+
+    Frame.prototype.toString = function() {
+      var lines, name, ref, skipContentLength, value;
+      lines = [this.command];
+      skipContentLength = (this.headers['content-length'] === false) ? true : false;
+      if (skipContentLength) {
+        delete this.headers['content-length'];
+      }
+      ref = this.headers;
+      for (name in ref) {
+        if (!hasProp.call(ref, name)) continue;
+        value = ref[name];
+        if (this.escapeHeaderValues && this.command !== 'CONNECT' && this.command !== 'CONNECTED') {
+          lines.push(name + ":" + (Frame.frEscape(value)));
+        } else {
+          lines.push(name + ":" + value);
+        }
+      }
+      if (this.body && !skipContentLength) {
+        lines.push("content-length:" + (Frame.sizeOfUTF8(this.body)));
+      }
+      lines.push(Byte.LF + this.body);
+      return lines.join(Byte.LF);
+    };
+
+    Frame.sizeOfUTF8 = function(s) {
+      if (s) {
+        return encodeURI(s).match(/%..|./g).length;
+      } else {
+        return 0;
+      }
+    };
+
+    unmarshallSingle = function(data, escapeHeaderValues) {
+      var body, chr, command, divider, headerLines, headers, i, idx, j, k, len, len1, line, ref, ref1, ref2, start, trim;
+      if (escapeHeaderValues == null) {
+        escapeHeaderValues = false;
+      }
+      divider = data.search(RegExp("" + Byte.LF + Byte.LF));
+      headerLines = data.substring(0, divider).split(Byte.LF);
+      command = headerLines.shift();
+      headers = {};
+      trim = function(str) {
+        return str.replace(/^\s+|\s+$/g, '');
+      };
+      ref = headerLines.reverse();
+      for (j = 0, len1 = ref.length; j < len1; j++) {
+        line = ref[j];
+        idx = line.indexOf(':');
+        if (escapeHeaderValues && command !== 'CONNECT' && command !== 'CONNECTED') {
+          headers[trim(line.substring(0, idx))] = Frame.frUnEscape(trim(line.substring(idx + 1)));
+        } else {
+          headers[trim(line.substring(0, idx))] = trim(line.substring(idx + 1));
+        }
+      }
+      body = '';
+      start = divider + 2;
+      if (headers['content-length']) {
+        len = parseInt(headers['content-length']);
+        body = ('' + data).substring(start, start + len);
+      } else {
+        chr = null;
+        for (i = k = ref1 = start, ref2 = data.length; ref1 <= ref2 ? k < ref2 : k > ref2; i = ref1 <= ref2 ? ++k : --k) {
+          chr = data.charAt(i);
+          if (chr === Byte.NULL) {
+            break;
+          }
+          body += chr;
+        }
+      }
+      return new Frame(command, headers, body, escapeHeaderValues);
+    };
+
+    Frame.unmarshall = function(datas, escapeHeaderValues) {
+      var frame, frames, last_frame, r;
+      if (escapeHeaderValues == null) {
+        escapeHeaderValues = false;
+      }
+      frames = datas.split(RegExp("" + Byte.NULL + Byte.LF + "*"));
+      r = {
+        frames: [],
+        partial: ''
+      };
+      r.frames = (function() {
+        var j, len1, ref, results;
+        ref = frames.slice(0, -1);
+        results = [];
+        for (j = 0, len1 = ref.length; j < len1; j++) {
+          frame = ref[j];
+          results.push(unmarshallSingle(frame, escapeHeaderValues));
+        }
+        return results;
+      })();
+      last_frame = frames.slice(-1)[0];
+      if (last_frame === Byte.LF || (last_frame.search(RegExp("" + Byte.NULL + Byte.LF + "*$"))) !== -1) {
+        r.frames.push(unmarshallSingle(last_frame, escapeHeaderValues));
+      } else {
+        r.partial = last_frame;
+      }
+      return r;
+    };
+
+    Frame.marshall = function(command, headers, body, escapeHeaderValues) {
+      var frame;
+      frame = new Frame(command, headers, body, escapeHeaderValues);
+      return frame.toString() + Byte.NULL;
+    };
+
+    Frame.frEscape = function(str) {
+      return ("" + str).replace(/\\/g, "\\\\").replace(/\r/g, "\\r").replace(/\n/g, "\\n").replace(/:/g, "\\c");
+    };
+
+    Frame.frUnEscape = function(str) {
+      return ("" + str).replace(/\\r/g, "\r").replace(/\\n/g, "\n").replace(/\\c/g, ":").replace(/\\\\/g, "\\");
+    };
+
+    return Frame;
+
+  })();
+
+  Client = (function() {
+    var now;
+
+    function Client(ws_fn) {
+      this.ws_fn = function() {
+        var ws;
+        ws = ws_fn();
+        ws.binaryType = "arraybuffer";
+        return ws;
+      };
+      this.reconnect_delay = 0;
+      this.counter = 0;
+      this.connected = false;
+      this.heartbeat = {
+        outgoing: 10000,
+        incoming: 10000
+      };
+      this.maxWebSocketFrameSize = 16 * 1024;
+      this.subscriptions = {};
+      this.partialData = '';
+    }
+
+    Client.prototype.debug = function(message) {
+      var ref;
+      return typeof window !== "undefined" && window !== null ? (ref = window.console) != null ? ref.log(message) : void 0 : void 0;
+    };
+
+    now = function() {
+      if (Date.now) {
+        return Date.now();
+      } else {
+        return new Date().valueOf;
+      }
+    };
+
+    Client.prototype._transmit = function(command, headers, body) {
+      var out;
+      out = Frame.marshall(command, headers, body, this.escapeHeaderValues);
+      if (typeof this.debug === "function") {
+        this.debug(">>> " + out);
+      }
+      while (true) {
+        if (out.length > this.maxWebSocketFrameSize) {
+          this.ws.send(out.substring(0, this.maxWebSocketFrameSize));
+          out = out.substring(this.maxWebSocketFrameSize);
+          if (typeof this.debug === "function") {
+            this.debug("remaining = " + out.length);
+          }
+        } else {
+          return this.ws.send(out);
+        }
+      }
+    };
+
+    Client.prototype._setupHeartbeat = function(headers) {
+      var ref, ref1, serverIncoming, serverOutgoing, ttl, v;
+      if ((ref = headers.version) !== Stomp.VERSIONS.V1_1 && ref !== Stomp.VERSIONS.V1_2) {
+        return;
+      }
+      ref1 = (function() {
+        var j, len1, ref1, results;
+        ref1 = headers['heart-beat'].split(",");
+        results = [];
+        for (j = 0, len1 = ref1.length; j < len1; j++) {
+          v = ref1[j];
+          results.push(parseInt(v));
+        }
+        return results;
+      })(), serverOutgoing = ref1[0], serverIncoming = ref1[1];
+      if (!(this.heartbeat.outgoing === 0 || serverIncoming === 0)) {
+        ttl = Math.max(this.heartbeat.outgoing, serverIncoming);
+        if (typeof this.debug === "function") {
+          this.debug("send PING every " + ttl + "ms");
+        }
+        this.pinger = Stomp.setInterval(ttl, (function(_this) {
+          return function() {
+            _this.ws.send(Byte.LF);
+            return typeof _this.debug === "function" ? _this.debug(">>> PING") : void 0;
+          };
+        })(this));
+      }
+      if (!(this.heartbeat.incoming === 0 || serverOutgoing === 0)) {
+        ttl = Math.max(this.heartbeat.incoming, serverOutgoing);
+        if (typeof this.debug === "function") {
+          this.debug("check PONG every " + ttl + "ms");
+        }
+        return this.ponger = Stomp.setInterval(ttl, (function(_this) {
+          return function() {
+            var delta;
+            delta = now() - _this.serverActivity;
+            if (delta > ttl * 2) {
+              if (typeof _this.debug === "function") {
+                _this.debug("did not receive server activity for the last " + delta + "ms");
+              }
+              return _this.ws.close();
+            }
+          };
+        })(this));
+      }
+    };
+
+    Client.prototype._parseConnect = function() {
+      var args, closeEventCallback, connectCallback, errorCallback, headers;
+      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      headers = {};
+      if (args.length < 2) {
+        throw "Connect requires at least 2 arguments";
+      }
+      if (args[1] instanceof Function) {
+        headers = args[0], connectCallback = args[1], errorCallback = args[2], closeEventCallback = args[3];
+      } else {
+        switch (args.length) {
+          case 6:
+            headers.login = args[0], headers.passcode = args[1], connectCallback = args[2], errorCallback = args[3], closeEventCallback = args[4], headers.host = args[5];
+            break;
+          default:
+            headers.login = args[0], headers.passcode = args[1], connectCallback = args[2], errorCallback = args[3], closeEventCallback = args[4];
+        }
+      }
+      return [headers, connectCallback, errorCallback, closeEventCallback];
+    };
+
+    Client.prototype.connect = function() {
+      var args, out;
+      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      this.escapeHeaderValues = false;
+      out = this._parseConnect.apply(this, args);
+      this.headers = out[0], this.connectCallback = out[1], this.errorCallback = out[2], this.closeEventCallback = out[3];
+      this._active = true;
+      return this._connect();
+    };
+
+    Client.prototype._connect = function() {
+      var closeEventCallback, errorCallback, headers;
+      headers = this.headers;
+      errorCallback = this.errorCallback;
+      closeEventCallback = this.closeEventCallback;
+      if (typeof this.debug === "function") {
+        this.debug("Opening Web Socket...");
+      }
+      this.ws = this.ws_fn();
+      this.ws.onmessage = (function(_this) {
+        return function(evt) {
+          var arr, c, client, data, frame, j, len1, messageID, onreceive, ref, subscription, unmarshalledData;
+          data = typeof ArrayBuffer !== 'undefined' && evt.data instanceof ArrayBuffer ? (arr = new Uint8Array(evt.data), typeof _this.debug === "function" ? _this.debug("--- got data length: " + arr.length) : void 0, ((function() {
+            var j, len1, results;
+            results = [];
+            for (j = 0, len1 = arr.length; j < len1; j++) {
+              c = arr[j];
+              results.push(String.fromCharCode(c));
+            }
+            return results;
+          })()).join('')) : evt.data;
+          _this.serverActivity = now();
+          if (data === Byte.LF) {
+            if (typeof _this.debug === "function") {
+              _this.debug("<<< PONG");
+            }
+            return;
+          }
+          if (typeof _this.debug === "function") {
+            _this.debug("<<< " + data);
+          }
+          unmarshalledData = Frame.unmarshall(_this.partialData + data, _this.escapeHeaderValues);
+          _this.partialData = unmarshalledData.partial;
+          ref = unmarshalledData.frames;
+          for (j = 0, len1 = ref.length; j < len1; j++) {
+            frame = ref[j];
+            switch (frame.command) {
+              case "CONNECTED":
+                if (typeof _this.debug === "function") {
+                  _this.debug("connected to server " + frame.headers.server);
+                }
+                _this.connected = true;
+                _this.version = frame.headers.version;
+                if (_this.version === Stomp.VERSIONS.V1_2) {
+                  _this.escapeHeaderValues = true;
+                }
+                if (!_this._active) {
+                  _this.disconnect();
+                  return;
+                }
+                _this._setupHeartbeat(frame.headers);
+                if (typeof _this.connectCallback === "function") {
+                  _this.connectCallback(frame);
+                }
+                break;
+              case "MESSAGE":
+                subscription = frame.headers.subscription;
+                onreceive = _this.subscriptions[subscription] || _this.onreceive;
+                if (onreceive) {
+                  client = _this;
+                  if (_this.version === Stomp.VERSIONS.V1_2) {
+                    messageID = frame.headers["ack"];
+                  } else {
+                    messageID = frame.headers["message-id"];
+                  }
+                  frame.ack = function(headers) {
+                    if (headers == null) {
+                      headers = {};
+                    }
+                    return client.ack(messageID, subscription, headers);
+                  };
+                  frame.nack = function(headers) {
+                    if (headers == null) {
+                      headers = {};
+                    }
+                    return client.nack(messageID, subscription, headers);
+                  };
+                  onreceive(frame);
+                } else {
+                  if (typeof _this.debug === "function") {
+                    _this.debug("Unhandled received MESSAGE: " + frame);
+                  }
+                }
+                break;
+              case "RECEIPT":
+                if (frame.headers["receipt-id"] === _this.closeReceipt) {
+                  _this.ws.onclose = null;
+                  _this.ws.close();
+                  _this._cleanUp();
+                  if (typeof _this._disconnectCallback === "function") {
+                    _this._disconnectCallback();
+                  }
+                } else {
+                  if (typeof _this.onreceipt === "function") {
+                    _this.onreceipt(frame);
+                  }
+                }
+                break;
+              case "ERROR":
+                if (typeof errorCallback === "function") {
+                  errorCallback(frame);
+                }
+                break;
+              default:
+                if (typeof _this.debug === "function") {
+                  _this.debug("Unhandled frame: " + frame);
+                }
+            }
+          }
+        };
+      })(this);
+      this.ws.onclose = (function(_this) {
+        return function(closeEvent) {
+          var msg;
+          msg = "Whoops! Lost connection to " + _this.ws.url;
+          if (typeof _this.debug === "function") {
+            _this.debug(msg);
+          }
+          if (typeof closeEventCallback === "function") {
+            closeEventCallback(closeEvent);
+          }
+          _this._cleanUp();
+          if (typeof errorCallback === "function") {
+            errorCallback(msg);
+          }
+          return _this._schedule_reconnect();
+        };
+      })(this);
+      return this.ws.onopen = (function(_this) {
+        return function() {
+          if (typeof _this.debug === "function") {
+            _this.debug('Web Socket Opened...');
+          }
+          headers["accept-version"] = Stomp.VERSIONS.supportedVersions();
+          headers["heart-beat"] = [_this.heartbeat.outgoing, _this.heartbeat.incoming].join(',');
+          return _this._transmit("CONNECT", headers);
+        };
+      })(this);
+    };
+
+    Client.prototype._schedule_reconnect = function() {
+      if (this.reconnect_delay > 0) {
+        if (typeof this.debug === "function") {
+          this.debug("STOMP: scheduling reconnection in " + this.reconnect_delay + "ms");
+        }
+        return this._reconnector = setTimeout((function(_this) {
+          return function() {
+            if (_this.connected) {
+              return typeof _this.debug === "function" ? _this.debug('STOMP: already connected') : void 0;
+            } else {
+              if (typeof _this.debug === "function") {
+                _this.debug('STOMP: attempting to reconnect');
+              }
+              return _this._connect();
+            }
+          };
+        })(this), this.reconnect_delay);
+      }
+    };
+
+    Client.prototype.disconnect = function(disconnectCallback, headers) {
+      var error;
+      if (headers == null) {
+        headers = {};
+      }
+      this._disconnectCallback = disconnectCallback;
+      this._active = false;
+      if (this.connected) {
+        if (!headers.receipt) {
+          headers.receipt = "close-" + this.counter++;
+        }
+        this.closeReceipt = headers.receipt;
+        try {
+          return this._transmit("DISCONNECT", headers);
+        } catch (error1) {
+          error = error1;
+          return typeof this.debug === "function" ? this.debug('Ignoring error during disconnect', error) : void 0;
+        }
+      }
+    };
+
+    Client.prototype._cleanUp = function() {
+      if (this._reconnector) {
+        clearTimeout(this._reconnector);
+      }
+      this.connected = false;
+      this.subscriptions = {};
+      this.partial = '';
+      if (this.pinger) {
+        Stomp.clearInterval(this.pinger);
+      }
+      if (this.ponger) {
+        return Stomp.clearInterval(this.ponger);
+      }
+    };
+
+    Client.prototype.send = function(destination, headers, body) {
+      if (headers == null) {
+        headers = {};
+      }
+      if (body == null) {
+        body = '';
+      }
+      headers.destination = destination;
+      return this._transmit("SEND", headers, body);
+    };
+
+    Client.prototype.subscribe = function(destination, callback, headers) {
+      var client;
+      if (headers == null) {
+        headers = {};
+      }
+      if (!headers.id) {
+        headers.id = "sub-" + this.counter++;
+      }
+      headers.destination = destination;
+      this.subscriptions[headers.id] = callback;
+      this._transmit("SUBSCRIBE", headers);
+      client = this;
+      return {
+        id: headers.id,
+        unsubscribe: function(hdrs) {
+          return client.unsubscribe(headers.id, hdrs);
+        }
+      };
+    };
+
+    Client.prototype.unsubscribe = function(id, headers) {
+      if (headers == null) {
+        headers = {};
+      }
+      delete this.subscriptions[id];
+      headers.id = id;
+      return this._transmit("UNSUBSCRIBE", headers);
+    };
+
+    Client.prototype.begin = function(transaction_id) {
+      var client, txid;
+      txid = transaction_id || "tx-" + this.counter++;
+      this._transmit("BEGIN", {
+        transaction: txid
+      });
+      client = this;
+      return {
+        id: txid,
+        commit: function() {
+          return client.commit(txid);
+        },
+        abort: function() {
+          return client.abort(txid);
+        }
+      };
+    };
+
+    Client.prototype.commit = function(transaction_id) {
+      return this._transmit("COMMIT", {
+        transaction: transaction_id
+      });
+    };
+
+    Client.prototype.abort = function(transaction_id) {
+      return this._transmit("ABORT", {
+        transaction: transaction_id
+      });
+    };
+
+    Client.prototype.ack = function(messageID, subscription, headers) {
+      if (headers == null) {
+        headers = {};
+      }
+      if (this.version === Stomp.VERSIONS.V1_2) {
+        headers["id"] = messageID;
+      } else {
+        headers["message-id"] = messageID;
+      }
+      headers.subscription = subscription;
+      return this._transmit("ACK", headers);
+    };
+
+    Client.prototype.nack = function(messageID, subscription, headers) {
+      if (headers == null) {
+        headers = {};
+      }
+      if (this.version === Stomp.VERSIONS.V1_2) {
+        headers["id"] = messageID;
+      } else {
+        headers["message-id"] = messageID;
+      }
+      headers.subscription = subscription;
+      return this._transmit("NACK", headers);
+    };
+
+    return Client;
+
+  })();
+
+  Stomp = {
+    VERSIONS: {
+      V1_0: '1.0',
+      V1_1: '1.1',
+      V1_2: '1.2',
+      supportedVersions: function() {
+        return '1.2,1.1,1.0';
+      }
+    },
+    client: function(url, protocols) {
+      var ws_fn;
+      if (protocols == null) {
+        protocols = ['v10.stomp', 'v11.stomp', 'v12.stomp'];
+      }
+      ws_fn = function() {
+        var klass;
+        klass = Stomp.WebSocketClass || WebSocket;
+        return new klass(url, protocols);
+      };
+      return new Client(ws_fn);
+    },
+    over: function(ws) {
+      var ws_fn;
+      ws_fn = typeof ws === "function" ? ws : function() {
+        return ws;
+      };
+      return new Client(ws_fn);
+    },
+    Frame: Frame
+  };
+
+  Stomp.setInterval = function(interval, f) {
+    return setInterval(f, interval);
+  };
+
+  Stomp.clearInterval = function(id) {
+    return clearInterval(id);
+  };
+
+  if (typeof exports !== "undefined" && exports !== null) {
+    exports.Stomp = Stomp;
+  }
+
+  if (typeof window !== "undefined" && window !== null) {
+    window.Stomp = Stomp;
+  } else if (!exports) {
+    self.Stomp = Stomp;
+  }
+
+}).call(this);
+
+
+/***/ }),
+
 /***/ "../../../../angular-datatables/index.js":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2535,6 +3601,66 @@ var OuterSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
 
 /***/ }),
 
+/***/ "../../../../rxjs/_esm5/Scheduler.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Scheduler; });
+/**
+ * An execution context and a data structure to order tasks and schedule their
+ * execution. Provides a notion of (potentially virtual) time, through the
+ * `now()` getter method.
+ *
+ * Each unit of work in a Scheduler is called an {@link Action}.
+ *
+ * ```ts
+ * class Scheduler {
+ *   now(): number;
+ *   schedule(work, delay?, state?): Subscription;
+ * }
+ * ```
+ *
+ * @class Scheduler
+ */
+var Scheduler = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function Scheduler(SchedulerAction, now) {
+        if (now === void 0) {
+            now = Scheduler.now;
+        }
+        this.SchedulerAction = SchedulerAction;
+        this.now = now;
+    }
+    /**
+     * Schedules a function, `work`, for execution. May happen at some point in
+     * the future, according to the `delay` parameter, if specified. May be passed
+     * some context object, `state`, which will be passed to the `work` function.
+     *
+     * The given arguments will be processed an stored as an Action object in a
+     * queue of actions.
+     *
+     * @param {function(state: ?T): ?Subscription} work A function representing a
+     * task, or some unit of work to be executed by the Scheduler.
+     * @param {number} [delay] Time to wait before executing the work, where the
+     * time unit is implicit and defined by the Scheduler itself.
+     * @param {T} [state] Some contextual data that the `work` function uses when
+     * called by the Scheduler.
+     * @return {Subscription} A subscription in order to be able to unsubscribe
+     * the scheduled work.
+     */
+    Scheduler.prototype.schedule = function (work, delay, state) {
+        if (delay === void 0) {
+            delay = 0;
+        }
+        return new this.SchedulerAction(this, work).schedule(state, delay);
+    };
+    Scheduler.now = Date.now ? Date.now : function () { return +new Date(); };
+    return Scheduler;
+}());
+//# sourceMappingURL=Scheduler.js.map 
+
+
+/***/ }),
+
 /***/ "../../../../rxjs/_esm5/Subject.js":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3255,6 +4381,152 @@ function flattenUnsubscriptionErrors(errors) {
 
 /***/ }),
 
+/***/ "../../../../rxjs/_esm5/add/observable/throw.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__observable_throw__ = __webpack_require__("../../../../rxjs/_esm5/observable/throw.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._observable_throw PURE_IMPORTS_END */
+
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].throw = __WEBPACK_IMPORTED_MODULE_1__observable_throw__["a" /* _throw */];
+//# sourceMappingURL=throw.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/add/operator/catch.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operator_catch__ = __webpack_require__("../../../../rxjs/_esm5/operator/catch.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._operator_catch PURE_IMPORTS_END */
+
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype.catch = __WEBPACK_IMPORTED_MODULE_1__operator_catch__["a" /* _catch */];
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype._catch = __WEBPACK_IMPORTED_MODULE_1__operator_catch__["a" /* _catch */];
+//# sourceMappingURL=catch.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/add/operator/debounceTime.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operator_debounceTime__ = __webpack_require__("../../../../rxjs/_esm5/operator/debounceTime.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._operator_debounceTime PURE_IMPORTS_END */
+
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype.debounceTime = __WEBPACK_IMPORTED_MODULE_1__operator_debounceTime__["a" /* debounceTime */];
+//# sourceMappingURL=debounceTime.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/add/operator/distinctUntilChanged.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operator_distinctUntilChanged__ = __webpack_require__("../../../../rxjs/_esm5/operator/distinctUntilChanged.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._operator_distinctUntilChanged PURE_IMPORTS_END */
+
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype.distinctUntilChanged = __WEBPACK_IMPORTED_MODULE_1__operator_distinctUntilChanged__["a" /* distinctUntilChanged */];
+//# sourceMappingURL=distinctUntilChanged.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/add/operator/filter.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operator_filter__ = __webpack_require__("../../../../rxjs/_esm5/operator/filter.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._operator_filter PURE_IMPORTS_END */
+
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype.filter = __WEBPACK_IMPORTED_MODULE_1__operator_filter__["a" /* filter */];
+//# sourceMappingURL=filter.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/add/operator/first.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operator_first__ = __webpack_require__("../../../../rxjs/_esm5/operator/first.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._operator_first PURE_IMPORTS_END */
+
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype.first = __WEBPACK_IMPORTED_MODULE_1__operator_first__["a" /* first */];
+//# sourceMappingURL=first.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/add/operator/map.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operator_map__ = __webpack_require__("../../../../rxjs/_esm5/operator/map.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._operator_map PURE_IMPORTS_END */
+
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype.map = __WEBPACK_IMPORTED_MODULE_1__operator_map__["a" /* map */];
+//# sourceMappingURL=map.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/add/operator/share.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operator_share__ = __webpack_require__("../../../../rxjs/_esm5/operator/share.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._operator_share PURE_IMPORTS_END */
+
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype.share = __WEBPACK_IMPORTED_MODULE_1__operator_share__["a" /* share */];
+//# sourceMappingURL=share.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/add/operator/switchMap.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operator_switchMap__ = __webpack_require__("../../../../rxjs/_esm5/operator/switchMap.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._operator_switchMap PURE_IMPORTS_END */
+
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype.switchMap = __WEBPACK_IMPORTED_MODULE_1__operator_switchMap__["a" /* switchMap */];
+//# sourceMappingURL=switchMap.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/add/operator/toPromise.js":
+/***/ (function(module, exports) {
+
+// HACK: does nothing, because `toPromise` now lives on the `Observable` itself.
+// leaving this module here to prevent breakage.
+//# sourceMappingURL=toPromise.js.map 
+
+
+/***/ }),
+
 /***/ "../../../../rxjs/_esm5/observable/ArrayLikeObservable.js":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3748,6 +5020,100 @@ var EmptyObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     return EmptyObservable;
 }(__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]));
 //# sourceMappingURL=EmptyObservable.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/observable/ErrorObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ErrorObservable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/** PURE_IMPORTS_START .._Observable PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @extends {Ignored}
+ * @hide true
+ */
+var ErrorObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(ErrorObservable, _super);
+    function ErrorObservable(error, scheduler) {
+        _super.call(this);
+        this.error = error;
+        this.scheduler = scheduler;
+    }
+    /**
+     * Creates an Observable that emits no items to the Observer and immediately
+     * emits an error notification.
+     *
+     * <span class="informal">Just emits 'error', and nothing else.
+     * </span>
+     *
+     * <img src="./img/throw.png" width="100%">
+     *
+     * This static operator is useful for creating a simple Observable that only
+     * emits the error notification. It can be used for composing with other
+     * Observables, such as in a {@link mergeMap}.
+     *
+     * @example <caption>Emit the number 7, then emit an error.</caption>
+     * var result = Rx.Observable.throw(new Error('oops!')).startWith(7);
+     * result.subscribe(x => console.log(x), e => console.error(e));
+     *
+     * @example <caption>Map and flatten numbers to the sequence 'a', 'b', 'c', but throw an error for 13</caption>
+     * var interval = Rx.Observable.interval(1000);
+     * var result = interval.mergeMap(x =>
+     *   x === 13 ?
+     *     Rx.Observable.throw('Thirteens are bad') :
+     *     Rx.Observable.of('a', 'b', 'c')
+     * );
+     * result.subscribe(x => console.log(x), e => console.error(e));
+     *
+     * @see {@link create}
+     * @see {@link empty}
+     * @see {@link never}
+     * @see {@link of}
+     *
+     * @param {any} error The particular Error to pass to the error notification.
+     * @param {Scheduler} [scheduler] A {@link IScheduler} to use for scheduling
+     * the emission of the error notification.
+     * @return {Observable} An error Observable: emits only the error notification
+     * using the given error argument.
+     * @static true
+     * @name throw
+     * @owner Observable
+     */
+    ErrorObservable.create = function (error, scheduler) {
+        return new ErrorObservable(error, scheduler);
+    };
+    ErrorObservable.dispatch = function (arg) {
+        var error = arg.error, subscriber = arg.subscriber;
+        subscriber.error(error);
+    };
+    ErrorObservable.prototype._subscribe = function (subscriber) {
+        var error = this.error;
+        var scheduler = this.scheduler;
+        subscriber.syncErrorThrowable = true;
+        if (scheduler) {
+            return scheduler.schedule(ErrorObservable.dispatch, 0, {
+                error: error, subscriber: subscriber
+            });
+        }
+        else {
+            subscriber.error(error);
+        }
+    };
+    return ErrorObservable;
+}(__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]));
+//# sourceMappingURL=ErrorObservable.js.map 
 
 
 /***/ }),
@@ -4337,6 +5703,20 @@ var of = __WEBPACK_IMPORTED_MODULE_0__ArrayObservable__["a" /* ArrayObservable *
 
 /***/ }),
 
+/***/ "../../../../rxjs/_esm5/observable/throw.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return _throw; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ErrorObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/ErrorObservable.js");
+/** PURE_IMPORTS_START ._ErrorObservable PURE_IMPORTS_END */
+
+var _throw = __WEBPACK_IMPORTED_MODULE_0__ErrorObservable__["a" /* ErrorObservable */].create;
+//# sourceMappingURL=throw.js.map 
+
+
+/***/ }),
+
 /***/ "../../../../rxjs/_esm5/operator/catch.js":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -4549,6 +5929,129 @@ function concatMap(project, resultSelector) {
     return Object(__WEBPACK_IMPORTED_MODULE_0__operators_concatMap__["a" /* concatMap */])(project, resultSelector)(this);
 }
 //# sourceMappingURL=concatMap.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operator/debounceTime.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = debounceTime;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__scheduler_async__ = __webpack_require__("../../../../rxjs/_esm5/scheduler/async.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operators_debounceTime__ = __webpack_require__("../../../../rxjs/_esm5/operators/debounceTime.js");
+/** PURE_IMPORTS_START .._scheduler_async,.._operators_debounceTime PURE_IMPORTS_END */
+
+
+/**
+ * Emits a value from the source Observable only after a particular time span
+ * has passed without another source emission.
+ *
+ * <span class="informal">It's like {@link delay}, but passes only the most
+ * recent value from each burst of emissions.</span>
+ *
+ * <img src="./img/debounceTime.png" width="100%">
+ *
+ * `debounceTime` delays values emitted by the source Observable, but drops
+ * previous pending delayed emissions if a new value arrives on the source
+ * Observable. This operator keeps track of the most recent value from the
+ * source Observable, and emits that only when `dueTime` enough time has passed
+ * without any other value appearing on the source Observable. If a new value
+ * appears before `dueTime` silence occurs, the previous value will be dropped
+ * and will not be emitted on the output Observable.
+ *
+ * This is a rate-limiting operator, because it is impossible for more than one
+ * value to be emitted in any time window of duration `dueTime`, but it is also
+ * a delay-like operator since output emissions do not occur at the same time as
+ * they did on the source Observable. Optionally takes a {@link IScheduler} for
+ * managing timers.
+ *
+ * @example <caption>Emit the most recent click after a burst of clicks</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var result = clicks.debounceTime(1000);
+ * result.subscribe(x => console.log(x));
+ *
+ * @see {@link auditTime}
+ * @see {@link debounce}
+ * @see {@link delay}
+ * @see {@link sampleTime}
+ * @see {@link throttleTime}
+ *
+ * @param {number} dueTime The timeout duration in milliseconds (or the time
+ * unit determined internally by the optional `scheduler`) for the window of
+ * time required to wait for emission silence before emitting the most recent
+ * source value.
+ * @param {Scheduler} [scheduler=async] The {@link IScheduler} to use for
+ * managing the timers that handle the timeout for each value.
+ * @return {Observable} An Observable that delays the emissions of the source
+ * Observable by the specified `dueTime`, and may drop some values if they occur
+ * too frequently.
+ * @method debounceTime
+ * @owner Observable
+ */
+function debounceTime(dueTime, scheduler) {
+    if (scheduler === void 0) {
+        scheduler = __WEBPACK_IMPORTED_MODULE_0__scheduler_async__["a" /* async */];
+    }
+    return Object(__WEBPACK_IMPORTED_MODULE_1__operators_debounceTime__["a" /* debounceTime */])(dueTime, scheduler)(this);
+}
+//# sourceMappingURL=debounceTime.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operator/distinctUntilChanged.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = distinctUntilChanged;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_distinctUntilChanged__ = __webpack_require__("../../../../rxjs/_esm5/operators/distinctUntilChanged.js");
+/** PURE_IMPORTS_START .._operators_distinctUntilChanged PURE_IMPORTS_END */
+
+/* tslint:enable:max-line-length */
+/**
+ * Returns an Observable that emits all items emitted by the source Observable that are distinct by comparison from the previous item.
+ *
+ * If a comparator function is provided, then it will be called for each item to test for whether or not that value should be emitted.
+ *
+ * If a comparator function is not provided, an equality check is used by default.
+ *
+ * @example <caption>A simple example with numbers</caption>
+ * Observable.of(1, 1, 2, 2, 2, 1, 1, 2, 3, 3, 4)
+ *   .distinctUntilChanged()
+ *   .subscribe(x => console.log(x)); // 1, 2, 1, 2, 3, 4
+ *
+ * @example <caption>An example using a compare function</caption>
+ * interface Person {
+ *    age: number,
+ *    name: string
+ * }
+ *
+ * Observable.of<Person>(
+ *     { age: 4, name: 'Foo'},
+ *     { age: 7, name: 'Bar'},
+ *     { age: 5, name: 'Foo'})
+ *     { age: 6, name: 'Foo'})
+ *     .distinctUntilChanged((p: Person, q: Person) => p.name === q.name)
+ *     .subscribe(x => console.log(x));
+ *
+ * // displays:
+ * // { age: 4, name: 'Foo' }
+ * // { age: 7, name: 'Bar' }
+ * // { age: 5, name: 'Foo' }
+ *
+ * @see {@link distinct}
+ * @see {@link distinctUntilKeyChanged}
+ *
+ * @param {function} [compare] Optional comparison function called to test if an item is distinct from the previous item in the source.
+ * @return {Observable} An Observable that emits items from the source Observable with distinct values.
+ * @method distinctUntilChanged
+ * @owner Observable
+ */
+function distinctUntilChanged(compare, keySelector) {
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_distinctUntilChanged__["a" /* distinctUntilChanged */])(compare, keySelector)(this);
+}
+//# sourceMappingURL=distinctUntilChanged.js.map 
 
 
 /***/ }),
@@ -5099,6 +6602,70 @@ function share() {
 
 /***/ }),
 
+/***/ "../../../../rxjs/_esm5/operator/switchMap.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = switchMap;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_switchMap__ = __webpack_require__("../../../../rxjs/_esm5/operators/switchMap.js");
+/** PURE_IMPORTS_START .._operators_switchMap PURE_IMPORTS_END */
+
+/* tslint:enable:max-line-length */
+/**
+ * Projects each source value to an Observable which is merged in the output
+ * Observable, emitting values only from the most recently projected Observable.
+ *
+ * <span class="informal">Maps each value to an Observable, then flattens all of
+ * these inner Observables using {@link switch}.</span>
+ *
+ * <img src="./img/switchMap.png" width="100%">
+ *
+ * Returns an Observable that emits items based on applying a function that you
+ * supply to each item emitted by the source Observable, where that function
+ * returns an (so-called "inner") Observable. Each time it observes one of these
+ * inner Observables, the output Observable begins emitting the items emitted by
+ * that inner Observable. When a new inner Observable is emitted, `switchMap`
+ * stops emitting items from the earlier-emitted inner Observable and begins
+ * emitting items from the new one. It continues to behave like this for
+ * subsequent inner Observables.
+ *
+ * @example <caption>Rerun an interval Observable on every click event</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var result = clicks.switchMap((ev) => Rx.Observable.interval(1000));
+ * result.subscribe(x => console.log(x));
+ *
+ * @see {@link concatMap}
+ * @see {@link exhaustMap}
+ * @see {@link mergeMap}
+ * @see {@link switch}
+ * @see {@link switchMapTo}
+ *
+ * @param {function(value: T, ?index: number): ObservableInput} project A function
+ * that, when applied to an item emitted by the source Observable, returns an
+ * Observable.
+ * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
+ * A function to produce the value on the output Observable based on the values
+ * and the indices of the source (outer) emission and the inner Observable
+ * emission. The arguments passed to this function are:
+ * - `outerValue`: the value that came from the source
+ * - `innerValue`: the value that came from the projected Observable
+ * - `outerIndex`: the "index" of the value that came from the source
+ * - `innerIndex`: the "index" of the value from the projected Observable
+ * @return {Observable} An Observable that emits the result of applying the
+ * projection function (and the optional `resultSelector`) to each item emitted
+ * by the source Observable and taking only the values from the most recently
+ * projected inner Observable.
+ * @method switchMap
+ * @owner Observable
+ */
+function switchMap(project, resultSelector) {
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_switchMap__["a" /* switchMap */])(project, resultSelector)(this);
+}
+//# sourceMappingURL=switchMap.js.map 
+
+
+/***/ }),
+
 /***/ "../../../../rxjs/_esm5/operators/catchError.js":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -5367,6 +6934,136 @@ function concatMap(project, resultSelector) {
 
 /***/ }),
 
+/***/ "../../../../rxjs/_esm5/operators/debounceTime.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = debounceTime;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__scheduler_async__ = __webpack_require__("../../../../rxjs/_esm5/scheduler/async.js");
+/** PURE_IMPORTS_START .._Subscriber,.._scheduler_async PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+/**
+ * Emits a value from the source Observable only after a particular time span
+ * has passed without another source emission.
+ *
+ * <span class="informal">It's like {@link delay}, but passes only the most
+ * recent value from each burst of emissions.</span>
+ *
+ * <img src="./img/debounceTime.png" width="100%">
+ *
+ * `debounceTime` delays values emitted by the source Observable, but drops
+ * previous pending delayed emissions if a new value arrives on the source
+ * Observable. This operator keeps track of the most recent value from the
+ * source Observable, and emits that only when `dueTime` enough time has passed
+ * without any other value appearing on the source Observable. If a new value
+ * appears before `dueTime` silence occurs, the previous value will be dropped
+ * and will not be emitted on the output Observable.
+ *
+ * This is a rate-limiting operator, because it is impossible for more than one
+ * value to be emitted in any time window of duration `dueTime`, but it is also
+ * a delay-like operator since output emissions do not occur at the same time as
+ * they did on the source Observable. Optionally takes a {@link IScheduler} for
+ * managing timers.
+ *
+ * @example <caption>Emit the most recent click after a burst of clicks</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var result = clicks.debounceTime(1000);
+ * result.subscribe(x => console.log(x));
+ *
+ * @see {@link auditTime}
+ * @see {@link debounce}
+ * @see {@link delay}
+ * @see {@link sampleTime}
+ * @see {@link throttleTime}
+ *
+ * @param {number} dueTime The timeout duration in milliseconds (or the time
+ * unit determined internally by the optional `scheduler`) for the window of
+ * time required to wait for emission silence before emitting the most recent
+ * source value.
+ * @param {Scheduler} [scheduler=async] The {@link IScheduler} to use for
+ * managing the timers that handle the timeout for each value.
+ * @return {Observable} An Observable that delays the emissions of the source
+ * Observable by the specified `dueTime`, and may drop some values if they occur
+ * too frequently.
+ * @method debounceTime
+ * @owner Observable
+ */
+function debounceTime(dueTime, scheduler) {
+    if (scheduler === void 0) {
+        scheduler = __WEBPACK_IMPORTED_MODULE_1__scheduler_async__["a" /* async */];
+    }
+    return function (source) { return source.lift(new DebounceTimeOperator(dueTime, scheduler)); };
+}
+var DebounceTimeOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function DebounceTimeOperator(dueTime, scheduler) {
+        this.dueTime = dueTime;
+        this.scheduler = scheduler;
+    }
+    DebounceTimeOperator.prototype.call = function (subscriber, source) {
+        return source.subscribe(new DebounceTimeSubscriber(subscriber, this.dueTime, this.scheduler));
+    };
+    return DebounceTimeOperator;
+}());
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var DebounceTimeSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(DebounceTimeSubscriber, _super);
+    function DebounceTimeSubscriber(destination, dueTime, scheduler) {
+        _super.call(this, destination);
+        this.dueTime = dueTime;
+        this.scheduler = scheduler;
+        this.debouncedSubscription = null;
+        this.lastValue = null;
+        this.hasValue = false;
+    }
+    DebounceTimeSubscriber.prototype._next = function (value) {
+        this.clearDebounce();
+        this.lastValue = value;
+        this.hasValue = true;
+        this.add(this.debouncedSubscription = this.scheduler.schedule(dispatchNext, this.dueTime, this));
+    };
+    DebounceTimeSubscriber.prototype._complete = function () {
+        this.debouncedNext();
+        this.destination.complete();
+    };
+    DebounceTimeSubscriber.prototype.debouncedNext = function () {
+        this.clearDebounce();
+        if (this.hasValue) {
+            this.destination.next(this.lastValue);
+            this.lastValue = null;
+            this.hasValue = false;
+        }
+    };
+    DebounceTimeSubscriber.prototype.clearDebounce = function () {
+        var debouncedSubscription = this.debouncedSubscription;
+        if (debouncedSubscription !== null) {
+            this.remove(debouncedSubscription);
+            debouncedSubscription.unsubscribe();
+            this.debouncedSubscription = null;
+        }
+    };
+    return DebounceTimeSubscriber;
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+function dispatchNext(subscriber) {
+    subscriber.debouncedNext();
+}
+//# sourceMappingURL=debounceTime.js.map 
+
+
+/***/ }),
+
 /***/ "../../../../rxjs/_esm5/operators/defaultIfEmpty.js":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -5453,6 +7150,127 @@ var DefaultIfEmptySubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     return DefaultIfEmptySubscriber;
 }(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
 //# sourceMappingURL=defaultIfEmpty.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operators/distinctUntilChanged.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = distinctUntilChanged;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_tryCatch__ = __webpack_require__("../../../../rxjs/_esm5/util/tryCatch.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_errorObject__ = __webpack_require__("../../../../rxjs/_esm5/util/errorObject.js");
+/** PURE_IMPORTS_START .._Subscriber,.._util_tryCatch,.._util_errorObject PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+
+/* tslint:enable:max-line-length */
+/**
+ * Returns an Observable that emits all items emitted by the source Observable that are distinct by comparison from the previous item.
+ *
+ * If a comparator function is provided, then it will be called for each item to test for whether or not that value should be emitted.
+ *
+ * If a comparator function is not provided, an equality check is used by default.
+ *
+ * @example <caption>A simple example with numbers</caption>
+ * Observable.of(1, 1, 2, 2, 2, 1, 1, 2, 3, 3, 4)
+ *   .distinctUntilChanged()
+ *   .subscribe(x => console.log(x)); // 1, 2, 1, 2, 3, 4
+ *
+ * @example <caption>An example using a compare function</caption>
+ * interface Person {
+ *    age: number,
+ *    name: string
+ * }
+ *
+ * Observable.of<Person>(
+ *     { age: 4, name: 'Foo'},
+ *     { age: 7, name: 'Bar'},
+ *     { age: 5, name: 'Foo'})
+ *     { age: 6, name: 'Foo'})
+ *     .distinctUntilChanged((p: Person, q: Person) => p.name === q.name)
+ *     .subscribe(x => console.log(x));
+ *
+ * // displays:
+ * // { age: 4, name: 'Foo' }
+ * // { age: 7, name: 'Bar' }
+ * // { age: 5, name: 'Foo' }
+ *
+ * @see {@link distinct}
+ * @see {@link distinctUntilKeyChanged}
+ *
+ * @param {function} [compare] Optional comparison function called to test if an item is distinct from the previous item in the source.
+ * @return {Observable} An Observable that emits items from the source Observable with distinct values.
+ * @method distinctUntilChanged
+ * @owner Observable
+ */
+function distinctUntilChanged(compare, keySelector) {
+    return function (source) { return source.lift(new DistinctUntilChangedOperator(compare, keySelector)); };
+}
+var DistinctUntilChangedOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function DistinctUntilChangedOperator(compare, keySelector) {
+        this.compare = compare;
+        this.keySelector = keySelector;
+    }
+    DistinctUntilChangedOperator.prototype.call = function (subscriber, source) {
+        return source.subscribe(new DistinctUntilChangedSubscriber(subscriber, this.compare, this.keySelector));
+    };
+    return DistinctUntilChangedOperator;
+}());
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var DistinctUntilChangedSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(DistinctUntilChangedSubscriber, _super);
+    function DistinctUntilChangedSubscriber(destination, compare, keySelector) {
+        _super.call(this, destination);
+        this.keySelector = keySelector;
+        this.hasKey = false;
+        if (typeof compare === 'function') {
+            this.compare = compare;
+        }
+    }
+    DistinctUntilChangedSubscriber.prototype.compare = function (x, y) {
+        return x === y;
+    };
+    DistinctUntilChangedSubscriber.prototype._next = function (value) {
+        var keySelector = this.keySelector;
+        var key = value;
+        if (keySelector) {
+            key = Object(__WEBPACK_IMPORTED_MODULE_1__util_tryCatch__["a" /* tryCatch */])(this.keySelector)(value);
+            if (key === __WEBPACK_IMPORTED_MODULE_2__util_errorObject__["a" /* errorObject */]) {
+                return this.destination.error(__WEBPACK_IMPORTED_MODULE_2__util_errorObject__["a" /* errorObject */].e);
+            }
+        }
+        var result = false;
+        if (this.hasKey) {
+            result = Object(__WEBPACK_IMPORTED_MODULE_1__util_tryCatch__["a" /* tryCatch */])(this.compare)(this.key, key);
+            if (result === __WEBPACK_IMPORTED_MODULE_2__util_errorObject__["a" /* errorObject */]) {
+                return this.destination.error(__WEBPACK_IMPORTED_MODULE_2__util_errorObject__["a" /* errorObject */].e);
+            }
+        }
+        else {
+            this.hasKey = true;
+        }
+        if (Boolean(result) === false) {
+            this.key = key;
+            this.destination.next(value);
+        }
+    };
+    return DistinctUntilChangedSubscriber;
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=distinctUntilChanged.js.map 
 
 
 /***/ }),
@@ -6957,6 +8775,160 @@ function share() {
 
 /***/ }),
 
+/***/ "../../../../rxjs/_esm5/operators/switchMap.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = switchMap;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__OuterSubscriber__ = __webpack_require__("../../../../rxjs/_esm5/OuterSubscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_subscribeToResult__ = __webpack_require__("../../../../rxjs/_esm5/util/subscribeToResult.js");
+/** PURE_IMPORTS_START .._OuterSubscriber,.._util_subscribeToResult PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+/* tslint:enable:max-line-length */
+/**
+ * Projects each source value to an Observable which is merged in the output
+ * Observable, emitting values only from the most recently projected Observable.
+ *
+ * <span class="informal">Maps each value to an Observable, then flattens all of
+ * these inner Observables using {@link switch}.</span>
+ *
+ * <img src="./img/switchMap.png" width="100%">
+ *
+ * Returns an Observable that emits items based on applying a function that you
+ * supply to each item emitted by the source Observable, where that function
+ * returns an (so-called "inner") Observable. Each time it observes one of these
+ * inner Observables, the output Observable begins emitting the items emitted by
+ * that inner Observable. When a new inner Observable is emitted, `switchMap`
+ * stops emitting items from the earlier-emitted inner Observable and begins
+ * emitting items from the new one. It continues to behave like this for
+ * subsequent inner Observables.
+ *
+ * @example <caption>Rerun an interval Observable on every click event</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var result = clicks.switchMap((ev) => Rx.Observable.interval(1000));
+ * result.subscribe(x => console.log(x));
+ *
+ * @see {@link concatMap}
+ * @see {@link exhaustMap}
+ * @see {@link mergeMap}
+ * @see {@link switch}
+ * @see {@link switchMapTo}
+ *
+ * @param {function(value: T, ?index: number): ObservableInput} project A function
+ * that, when applied to an item emitted by the source Observable, returns an
+ * Observable.
+ * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
+ * A function to produce the value on the output Observable based on the values
+ * and the indices of the source (outer) emission and the inner Observable
+ * emission. The arguments passed to this function are:
+ * - `outerValue`: the value that came from the source
+ * - `innerValue`: the value that came from the projected Observable
+ * - `outerIndex`: the "index" of the value that came from the source
+ * - `innerIndex`: the "index" of the value from the projected Observable
+ * @return {Observable} An Observable that emits the result of applying the
+ * projection function (and the optional `resultSelector`) to each item emitted
+ * by the source Observable and taking only the values from the most recently
+ * projected inner Observable.
+ * @method switchMap
+ * @owner Observable
+ */
+function switchMap(project, resultSelector) {
+    return function switchMapOperatorFunction(source) {
+        return source.lift(new SwitchMapOperator(project, resultSelector));
+    };
+}
+var SwitchMapOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function SwitchMapOperator(project, resultSelector) {
+        this.project = project;
+        this.resultSelector = resultSelector;
+    }
+    SwitchMapOperator.prototype.call = function (subscriber, source) {
+        return source.subscribe(new SwitchMapSubscriber(subscriber, this.project, this.resultSelector));
+    };
+    return SwitchMapOperator;
+}());
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var SwitchMapSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(SwitchMapSubscriber, _super);
+    function SwitchMapSubscriber(destination, project, resultSelector) {
+        _super.call(this, destination);
+        this.project = project;
+        this.resultSelector = resultSelector;
+        this.index = 0;
+    }
+    SwitchMapSubscriber.prototype._next = function (value) {
+        var result;
+        var index = this.index++;
+        try {
+            result = this.project(value, index);
+        }
+        catch (error) {
+            this.destination.error(error);
+            return;
+        }
+        this._innerSub(result, value, index);
+    };
+    SwitchMapSubscriber.prototype._innerSub = function (result, value, index) {
+        var innerSubscription = this.innerSubscription;
+        if (innerSubscription) {
+            innerSubscription.unsubscribe();
+        }
+        this.add(this.innerSubscription = Object(__WEBPACK_IMPORTED_MODULE_1__util_subscribeToResult__["a" /* subscribeToResult */])(this, result, value, index));
+    };
+    SwitchMapSubscriber.prototype._complete = function () {
+        var innerSubscription = this.innerSubscription;
+        if (!innerSubscription || innerSubscription.closed) {
+            _super.prototype._complete.call(this);
+        }
+    };
+    SwitchMapSubscriber.prototype._unsubscribe = function () {
+        this.innerSubscription = null;
+    };
+    SwitchMapSubscriber.prototype.notifyComplete = function (innerSub) {
+        this.remove(innerSub);
+        this.innerSubscription = null;
+        if (this.isStopped) {
+            _super.prototype._complete.call(this);
+        }
+    };
+    SwitchMapSubscriber.prototype.notifyNext = function (outerValue, innerValue, outerIndex, innerIndex, innerSub) {
+        if (this.resultSelector) {
+            this._tryNotifyNext(outerValue, innerValue, outerIndex, innerIndex);
+        }
+        else {
+            this.destination.next(innerValue);
+        }
+    };
+    SwitchMapSubscriber.prototype._tryNotifyNext = function (outerValue, innerValue, outerIndex, innerIndex) {
+        var result;
+        try {
+            result = this.resultSelector(outerValue, innerValue, outerIndex, innerIndex);
+        }
+        catch (err) {
+            this.destination.error(err);
+            return;
+        }
+        this.destination.next(result);
+    };
+    return SwitchMapSubscriber;
+}(__WEBPACK_IMPORTED_MODULE_0__OuterSubscriber__["a" /* OuterSubscriber */]));
+//# sourceMappingURL=switchMap.js.map 
+
+
+/***/ }),
+
 /***/ "../../../../rxjs/_esm5/operators/takeLast.js":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -7075,6 +9047,343 @@ var TakeLastSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     return TakeLastSubscriber;
 }(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
 //# sourceMappingURL=takeLast.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/scheduler/Action.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Action; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscription__ = __webpack_require__("../../../../rxjs/_esm5/Subscription.js");
+/** PURE_IMPORTS_START .._Subscription PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+/**
+ * A unit of work to be executed in a {@link Scheduler}. An action is typically
+ * created from within a Scheduler and an RxJS user does not need to concern
+ * themselves about creating and manipulating an Action.
+ *
+ * ```ts
+ * class Action<T> extends Subscription {
+ *   new (scheduler: Scheduler, work: (state?: T) => void);
+ *   schedule(state?: T, delay: number = 0): Subscription;
+ * }
+ * ```
+ *
+ * @class Action<T>
+ */
+var Action = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(Action, _super);
+    function Action(scheduler, work) {
+        _super.call(this);
+    }
+    /**
+     * Schedules this action on its parent Scheduler for execution. May be passed
+     * some context object, `state`. May happen at some point in the future,
+     * according to the `delay` parameter, if specified.
+     * @param {T} [state] Some contextual data that the `work` function uses when
+     * called by the Scheduler.
+     * @param {number} [delay] Time to wait before executing the work, where the
+     * time unit is implicit and defined by the Scheduler.
+     * @return {void}
+     */
+    Action.prototype.schedule = function (state, delay) {
+        if (delay === void 0) {
+            delay = 0;
+        }
+        return this;
+    };
+    return Action;
+}(__WEBPACK_IMPORTED_MODULE_0__Subscription__["a" /* Subscription */]));
+//# sourceMappingURL=Action.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/scheduler/AsyncAction.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AsyncAction; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_root__ = __webpack_require__("../../../../rxjs/_esm5/util/root.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Action__ = __webpack_require__("../../../../rxjs/_esm5/scheduler/Action.js");
+/** PURE_IMPORTS_START .._util_root,._Action PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var AsyncAction = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(AsyncAction, _super);
+    function AsyncAction(scheduler, work) {
+        _super.call(this, scheduler, work);
+        this.scheduler = scheduler;
+        this.work = work;
+        this.pending = false;
+    }
+    AsyncAction.prototype.schedule = function (state, delay) {
+        if (delay === void 0) {
+            delay = 0;
+        }
+        if (this.closed) {
+            return this;
+        }
+        // Always replace the current state with the new state.
+        this.state = state;
+        // Set the pending flag indicating that this action has been scheduled, or
+        // has recursively rescheduled itself.
+        this.pending = true;
+        var id = this.id;
+        var scheduler = this.scheduler;
+        //
+        // Important implementation note:
+        //
+        // Actions only execute once by default, unless rescheduled from within the
+        // scheduled callback. This allows us to implement single and repeat
+        // actions via the same code path, without adding API surface area, as well
+        // as mimic traditional recursion but across asynchronous boundaries.
+        //
+        // However, JS runtimes and timers distinguish between intervals achieved by
+        // serial `setTimeout` calls vs. a single `setInterval` call. An interval of
+        // serial `setTimeout` calls can be individually delayed, which delays
+        // scheduling the next `setTimeout`, and so on. `setInterval` attempts to
+        // guarantee the interval callback will be invoked more precisely to the
+        // interval period, regardless of load.
+        //
+        // Therefore, we use `setInterval` to schedule single and repeat actions.
+        // If the action reschedules itself with the same delay, the interval is not
+        // canceled. If the action doesn't reschedule, or reschedules with a
+        // different delay, the interval will be canceled after scheduled callback
+        // execution.
+        //
+        if (id != null) {
+            this.id = this.recycleAsyncId(scheduler, id, delay);
+        }
+        this.delay = delay;
+        // If this action has already an async Id, don't request a new one.
+        this.id = this.id || this.requestAsyncId(scheduler, this.id, delay);
+        return this;
+    };
+    AsyncAction.prototype.requestAsyncId = function (scheduler, id, delay) {
+        if (delay === void 0) {
+            delay = 0;
+        }
+        return __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].setInterval(scheduler.flush.bind(scheduler, this), delay);
+    };
+    AsyncAction.prototype.recycleAsyncId = function (scheduler, id, delay) {
+        if (delay === void 0) {
+            delay = 0;
+        }
+        // If this action is rescheduled with the same delay time, don't clear the interval id.
+        if (delay !== null && this.delay === delay && this.pending === false) {
+            return id;
+        }
+        // Otherwise, if the action's delay time is different from the current delay,
+        // or the action has been rescheduled before it's executed, clear the interval id
+        return __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].clearInterval(id) && undefined || undefined;
+    };
+    /**
+     * Immediately executes this action and the `work` it contains.
+     * @return {any}
+     */
+    AsyncAction.prototype.execute = function (state, delay) {
+        if (this.closed) {
+            return new Error('executing a cancelled action');
+        }
+        this.pending = false;
+        var error = this._execute(state, delay);
+        if (error) {
+            return error;
+        }
+        else if (this.pending === false && this.id != null) {
+            // Dequeue if the action didn't reschedule itself. Don't call
+            // unsubscribe(), because the action could reschedule later.
+            // For example:
+            // ```
+            // scheduler.schedule(function doWork(counter) {
+            //   /* ... I'm a busy worker bee ... */
+            //   var originalAction = this;
+            //   /* wait 100ms before rescheduling the action */
+            //   setTimeout(function () {
+            //     originalAction.schedule(counter + 1);
+            //   }, 100);
+            // }, 1000);
+            // ```
+            this.id = this.recycleAsyncId(this.scheduler, this.id, null);
+        }
+    };
+    AsyncAction.prototype._execute = function (state, delay) {
+        var errored = false;
+        var errorValue = undefined;
+        try {
+            this.work(state);
+        }
+        catch (e) {
+            errored = true;
+            errorValue = !!e && e || new Error(e);
+        }
+        if (errored) {
+            this.unsubscribe();
+            return errorValue;
+        }
+    };
+    AsyncAction.prototype._unsubscribe = function () {
+        var id = this.id;
+        var scheduler = this.scheduler;
+        var actions = scheduler.actions;
+        var index = actions.indexOf(this);
+        this.work = null;
+        this.state = null;
+        this.pending = false;
+        this.scheduler = null;
+        if (index !== -1) {
+            actions.splice(index, 1);
+        }
+        if (id != null) {
+            this.id = this.recycleAsyncId(scheduler, id, null);
+        }
+        this.delay = null;
+    };
+    return AsyncAction;
+}(__WEBPACK_IMPORTED_MODULE_1__Action__["a" /* Action */]));
+//# sourceMappingURL=AsyncAction.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/scheduler/AsyncScheduler.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AsyncScheduler; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Scheduler__ = __webpack_require__("../../../../rxjs/_esm5/Scheduler.js");
+/** PURE_IMPORTS_START .._Scheduler PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+var AsyncScheduler = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(AsyncScheduler, _super);
+    function AsyncScheduler() {
+        _super.apply(this, arguments);
+        this.actions = [];
+        /**
+         * A flag to indicate whether the Scheduler is currently executing a batch of
+         * queued actions.
+         * @type {boolean}
+         */
+        this.active = false;
+        /**
+         * An internal ID used to track the latest asynchronous task such as those
+         * coming from `setTimeout`, `setInterval`, `requestAnimationFrame`, and
+         * others.
+         * @type {any}
+         */
+        this.scheduled = undefined;
+    }
+    AsyncScheduler.prototype.flush = function (action) {
+        var actions = this.actions;
+        if (this.active) {
+            actions.push(action);
+            return;
+        }
+        var error;
+        this.active = true;
+        do {
+            if (error = action.execute(action.state, action.delay)) {
+                break;
+            }
+        } while (action = actions.shift()); // exhaust the scheduler queue
+        this.active = false;
+        if (error) {
+            while (action = actions.shift()) {
+                action.unsubscribe();
+            }
+            throw error;
+        }
+    };
+    return AsyncScheduler;
+}(__WEBPACK_IMPORTED_MODULE_0__Scheduler__["a" /* Scheduler */]));
+//# sourceMappingURL=AsyncScheduler.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/scheduler/async.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return async; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__AsyncAction__ = __webpack_require__("../../../../rxjs/_esm5/scheduler/AsyncAction.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AsyncScheduler__ = __webpack_require__("../../../../rxjs/_esm5/scheduler/AsyncScheduler.js");
+/** PURE_IMPORTS_START ._AsyncAction,._AsyncScheduler PURE_IMPORTS_END */
+
+
+/**
+ *
+ * Async Scheduler
+ *
+ * <span class="informal">Schedule task as if you used setTimeout(task, duration)</span>
+ *
+ * `async` scheduler schedules tasks asynchronously, by putting them on the JavaScript
+ * event loop queue. It is best used to delay tasks in time or to schedule tasks repeating
+ * in intervals.
+ *
+ * If you just want to "defer" task, that is to perform it right after currently
+ * executing synchronous code ends (commonly achieved by `setTimeout(deferredTask, 0)`),
+ * better choice will be the {@link asap} scheduler.
+ *
+ * @example <caption>Use async scheduler to delay task</caption>
+ * const task = () => console.log('it works!');
+ *
+ * Rx.Scheduler.async.schedule(task, 2000);
+ *
+ * // After 2 seconds logs:
+ * // "it works!"
+ *
+ *
+ * @example <caption>Use async scheduler to repeat task in intervals</caption>
+ * function task(state) {
+ *   console.log(state);
+ *   this.schedule(state + 1, 1000); // `this` references currently executing Action,
+ *                                   // which we reschedule with new state and delay
+ * }
+ *
+ * Rx.Scheduler.async.schedule(task, 3000, 0);
+ *
+ * // Logs:
+ * // 0 after 3s
+ * // 1 after 4s
+ * // 2 after 5s
+ * // 3 after 6s
+ *
+ * @static true
+ * @name async
+ * @owner Scheduler
+ */
+var async = /*@__PURE__*/ new __WEBPACK_IMPORTED_MODULE_1__AsyncScheduler__["a" /* AsyncScheduler */](__WEBPACK_IMPORTED_MODULE_0__AsyncAction__["a" /* AsyncAction */]);
+//# sourceMappingURL=async.js.map 
 
 
 /***/ }),
@@ -7887,6 +10196,70 @@ try {
 
 module.exports = g;
 
+
+/***/ }),
+
+/***/ "../../../../websocket/lib/browser.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+var _global = (function() { return this; })();
+var NativeWebSocket = _global.WebSocket || _global.MozWebSocket;
+var websocket_version = __webpack_require__("../../../../websocket/lib/version.js");
+
+
+/**
+ * Expose a W3C WebSocket class with just one or two arguments.
+ */
+function W3CWebSocket(uri, protocols) {
+	var native_instance;
+
+	if (protocols) {
+		native_instance = new NativeWebSocket(uri, protocols);
+	}
+	else {
+		native_instance = new NativeWebSocket(uri);
+	}
+
+	/**
+	 * 'native_instance' is an instance of nativeWebSocket (the browser's WebSocket
+	 * class). Since it is an Object it will be returned as it is when creating an
+	 * instance of W3CWebSocket via 'new W3CWebSocket()'.
+	 *
+	 * ECMAScript 5: http://bclary.com/2004/11/07/#a-13.2.2
+	 */
+	return native_instance;
+}
+if (NativeWebSocket) {
+	['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'].forEach(function(prop) {
+		Object.defineProperty(W3CWebSocket, prop, {
+			get: function() { return NativeWebSocket[prop]; }
+		});
+	});
+}
+
+/**
+ * Module exports.
+ */
+module.exports = {
+    'w3cwebsocket' : NativeWebSocket ? W3CWebSocket : null,
+    'version'      : websocket_version
+};
+
+
+/***/ }),
+
+/***/ "../../../../websocket/lib/version.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__("../../../../websocket/package.json").version;
+
+
+/***/ }),
+
+/***/ "../../../../websocket/package.json":
+/***/ (function(module, exports) {
+
+module.exports = {"_from":"websocket@latest","_id":"websocket@1.0.25","_inBundle":false,"_integrity":"sha512-M58njvi6ZxVb5k7kpnHh2BvNKuBWiwIYvsToErBzWhvBZYwlEiLcyLrG41T1jRcrY9ettqPYEqduLI7ul54CVQ==","_location":"/websocket","_phantomChildren":{},"_requested":{"type":"tag","registry":true,"raw":"websocket@latest","name":"websocket","escapedName":"websocket","rawSpec":"latest","saveSpec":null,"fetchSpec":"latest"},"_requiredBy":["/stompjs"],"_resolved":"https://registry.npmjs.org/websocket/-/websocket-1.0.25.tgz","_shasum":"998ec790f0a3eacb8b08b50a4350026692a11958","_spec":"websocket@latest","_where":"/home/lucien/Lucien/Code/2017/Webprint/WebPrint/webprint-frontend/node_modules/stompjs","author":{"name":"Brian McKelvey","email":"brian@worlize.com","url":"https://www.worlize.com/"},"browser":"lib/browser.js","bugs":{"url":"https://github.com/theturtle32/WebSocket-Node/issues"},"bundleDependencies":false,"config":{"verbose":false},"contributors":[{"name":"Iñaki Baz Castillo","email":"ibc@aliax.net","url":"http://dev.sipdoc.net"}],"dependencies":{"debug":"^2.2.0","nan":"^2.3.3","typedarray-to-buffer":"^3.1.2","yaeti":"^0.0.6"},"deprecated":false,"description":"Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.","devDependencies":{"buffer-equal":"^1.0.0","faucet":"^0.0.1","gulp":"git+https://github.com/gulpjs/gulp.git#4.0","gulp-jshint":"^2.0.4","jshint":"^2.0.0","jshint-stylish":"^2.2.1","tape":"^4.0.1"},"directories":{"lib":"./lib"},"engines":{"node":">=0.10.0"},"homepage":"https://github.com/theturtle32/WebSocket-Node","keywords":["websocket","websockets","socket","networking","comet","push","RFC-6455","realtime","server","client"],"license":"Apache-2.0","main":"index","name":"websocket","repository":{"type":"git","url":"git+https://github.com/theturtle32/WebSocket-Node.git"},"scripts":{"gulp":"gulp","install":"(node-gyp rebuild 2> builderror.log) || (exit 0)","test":"faucet test/unit"},"version":"1.0.25"}
 
 /***/ }),
 

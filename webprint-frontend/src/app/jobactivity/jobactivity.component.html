@@ -4,17 +4,17 @@
     <thead>
       <tr>
         <th scope="col">Document</th>
-        <th scope="col">Issued (yyyy-MM-dd)</th>
-        <th scope="col">Started (yyyy-MM-dd)</th>
-        <th scope="col">Completed (yyyy-MM-dd)</th>
+        <th scope="col">Issued</th>
+        <th scope="col">Started</th>
+        <th scope="col">Completed</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td>{{ activeJob.name }}</td>
-        <td>{{ activeJob.created | date:'yyyy-MM-dd'}}</td>
-        <td>{{ activeJob.started | date:'yyyy-MM-dd'}}</td>
-        <td>{{ activeJob.completed | date:'yyyy-MM-dd' }}</td>
+        <td>{{ activeJob.created | date:'yyyy-MM-ddThh:mm:ss'}}</td>
+        <td>{{ activeJob.started | date:'yyyy-MM-ddThh:mm:ss'}}</td>
+        <td>{{ activeJob.completed | date:'yyyy-MM-ddThh:mm:ss' }}</td>
       </tr>
     </tbody>
   </table>

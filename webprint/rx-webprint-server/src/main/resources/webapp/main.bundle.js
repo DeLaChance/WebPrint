@@ -92,12 +92,14 @@ var AppComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__page_not_found_page_not_found_component__ = __webpack_require__("../../../../../src/app/page-not-found/page-not-found.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__rest_service__ = __webpack_require__("../../../../../src/app/rest.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__data_service__ = __webpack_require__("../../../../../src/app/data.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__stomp_ng2_stompjs__ = __webpack_require__("../../../../@stomp/ng2-stompjs/@stomp/ng2-stompjs.es5.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -119,6 +121,23 @@ var appRoutes = [
     { path: '', component: __WEBPACK_IMPORTED_MODULE_10__overview_overview_component__["a" /* OverviewComponent */] },
     { path: '**', component: __WEBPACK_IMPORTED_MODULE_11__page_not_found_page_not_found_component__["a" /* PageNotFoundComponent */] }
 ];
+var stompConfig = {
+    // Which server?
+    url: 'ws://127.0.0.1:8181/stomp',
+    // Headers
+    // Typical keys: login, passcode, host
+    headers: {},
+    // How often to heartbeat?
+    // Interval in milliseconds, set to 0 to disable
+    heartbeat_in: 0,
+    heartbeat_out: 20000,
+    // Wait in milliseconds before attempting auto reconnect
+    // Set to 0 to disable
+    // Typical value 5000 (5 seconds)
+    reconnect_delay: 5000,
+    // Will log diagnostics on console
+    debug: true
+};
 var AppModule = (function () {
     function AppModule() {
     }
@@ -140,7 +159,13 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_4__angular_router__["a" /* RouterModule */].forRoot(appRoutes, { enableTracing: true } // <-- debugging purposes only
                 )
             ],
-            providers: [__WEBPACK_IMPORTED_MODULE_12__rest_service__["a" /* RestService */], __WEBPACK_IMPORTED_MODULE_13__data_service__["a" /* DataService */]],
+            providers: [__WEBPACK_IMPORTED_MODULE_12__rest_service__["a" /* RestService */], __WEBPACK_IMPORTED_MODULE_13__data_service__["a" /* DataService */],
+                __WEBPACK_IMPORTED_MODULE_14__stomp_ng2_stompjs__["b" /* StompService */],
+                {
+                    provide: __WEBPACK_IMPORTED_MODULE_14__stomp_ng2_stompjs__["a" /* StompConfig */],
+                    useValue: stompConfig
+                }
+            ],
             bootstrap: [__WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* AppComponent */]]
         })
     ], AppModule);
@@ -158,6 +183,8 @@ var AppModule = (function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DataService; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__printing_job__ = __webpack_require__("../../../../../src/app/printing-job.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__stomp_ng2_stompjs__ = __webpack_require__("../../../../@stomp/ng2-stompjs/@stomp/ng2-stompjs.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__rxjs_operators__ = __webpack_require__("../../../../../src/app/rxjs-operators.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -169,9 +196,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
+
+
 var DataService = (function () {
-    function DataService() {
+    function DataService(_stompService) {
+        var _this = this;
+        this._stompService = _stompService;
         this.dataListeners = [];
+        this.stomp_subscription = this._stompService.subscribe('notifications.printing-job');
+        this.stomp_subscription.map(function (message) {
+            return message.body;
+        }).subscribe(function (msg_body) {
+            var json = JSON.parse(msg_body);
+            var printingJob = __WEBPACK_IMPORTED_MODULE_1__printing_job__["a" /* PrintingJob */].decodeJson(json);
+            _this.updateSingle(printingJob);
+        });
     }
     DataService.prototype.addListener = function (listener) {
         this.dataListeners.push(listener);
@@ -181,6 +220,15 @@ var DataService = (function () {
         this.dataListeners.forEach(function (listener) {
             listener.update(_this.printingJobs);
         });
+    };
+    DataService.prototype.updateSingle = function (printingJob) {
+        for (var i = 0; i < this.printingJobs.length; i++) {
+            if (__WEBPACK_IMPORTED_MODULE_1__printing_job__["a" /* PrintingJob */].equals(this.printingJobs[i], printingJob)) {
+                this.printingJobs[i] = printingJob;
+                this.callListeners();
+                break;
+            }
+        }
     };
     DataService.prototype.loadPrintingJobs = function (rawPrintingJobs) {
         this.setPrintingJobs(this.unwrap(rawPrintingJobs));
@@ -202,7 +250,7 @@ var DataService = (function () {
     };
     DataService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_2__stomp_ng2_stompjs__["b" /* StompService */]])
     ], DataService);
     return DataService;
 }());
@@ -312,7 +360,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/jobactivity/jobactivity.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div *ngIf=\"activeJob; then thenBlock else elseBlock\"></div>\n<ng-template #thenBlock>\n  <table datatable class=\"table table-striped table-hover\">\n    <thead>\n      <tr>\n        <th scope=\"col\">Document</th>\n        <th scope=\"col\">Issued (yyyy-MM-dd)</th>\n        <th scope=\"col\">Started (yyyy-MM-dd)</th>\n        <th scope=\"col\">Completed (yyyy-MM-dd)</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td>{{ activeJob.name }}</td>\n        <td>{{ activeJob.created | date:'yyyy-MM-dd'}}</td>\n        <td>{{ activeJob.started | date:'yyyy-MM-dd'}}</td>\n        <td>{{ activeJob.completed | date:'yyyy-MM-dd' }}</td>\n      </tr>\n    </tbody>\n  </table>\n</ng-template>\n<ng-template #elseBlock>No active job at the moment</ng-template>\n"
+module.exports = "<div *ngIf=\"activeJob; then thenBlock else elseBlock\"></div>\n<ng-template #thenBlock>\n  <table datatable class=\"table table-striped table-hover\">\n    <thead>\n      <tr>\n        <th scope=\"col\">Document</th>\n        <th scope=\"col\">Issued</th>\n        <th scope=\"col\">Started</th>\n        <th scope=\"col\">Completed</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td>{{ activeJob.name }}</td>\n        <td>{{ activeJob.created | date:'yyyy-MM-ddThh:mm:ss'}}</td>\n        <td>{{ activeJob.started | date:'yyyy-MM-ddThh:mm:ss'}}</td>\n        <td>{{ activeJob.completed | date:'yyyy-MM-ddThh:mm:ss' }}</td>\n      </tr>\n    </tbody>\n  </table>\n</ng-template>\n<ng-template #elseBlock>No active job at the moment</ng-template>\n"
 
 /***/ }),
 
@@ -343,6 +391,7 @@ var JobactivityComponent = (function () {
     };
     JobactivityComponent.prototype.update = function (printingJobs) {
         var _this = this;
+        console.log("JobactivityComponent: Got update!");
         printingJobs.forEach(function (printingJob) {
             if (printingJob.started !== null && printingJob.completed === null) {
                 _this.setActiveJob(printingJob);
@@ -389,7 +438,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/joblist/joblist.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<table datatable class=\"table table-striped table-hover\">\n  <thead>\n    <tr>\n      <th scope=\"col\">#</th>\n      <th scope=\"col\">Document</th>\n      <th scope=\"col\">Issued (yyyy-MM-dd)</th>\n      <th scope=\"col\">Completed (yyyy-MM-dd)</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr *ngFor=\"let job of printingJobs; let i=index;\">\n      <th scope=\"row\">{{ i }}</th>\n      <td>{{ job.name }}</td>\n      <td>{{ job.created | date:'yyyy-MM-dd'}}</td>\n      <td>{{ job.completed | date:'yyyy-MM-dd' }}</td>\n    </tr>\n  </tbody>\n</table>\n"
+module.exports = "<table datatable class=\"table table-striped table-hover\">\n  <thead>\n    <tr>\n      <th scope=\"col\">#</th>\n      <th scope=\"col\">Document</th>\n      <th scope=\"col\">Created</th>\n      <th scope=\"col\">Started</th>\n      <th scope=\"col\">Completed</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr *ngFor=\"let job of printingJobs; let i=index;\">\n      <th scope=\"row\">{{ i }}</th>\n      <td>{{ job.name }}</td>\n      <td>{{ job.created | date:'yyyy-MM-ddThh:mm:ss'}}</td>\n      <td>{{ job.started | date:'yyyy-MM-ddThh:mm:ss'}}</td>\n      <td>{{ job.completed | date:'yyyy-MM-ddThh:mm:ss' }}</td>\n    </tr>\n  </tbody>\n</table>\n"
 
 /***/ }),
 
@@ -574,6 +623,15 @@ var PageNotFoundComponent = (function () {
 var PrintingJob = (function () {
     function PrintingJob() {
     }
+    PrintingJob.decodeJson = function (json) {
+        return {
+            id: json.identifier.identifier,
+            name: json.fileName,
+            created: PrintingJob.toDate(json.createdTime),
+            started: PrintingJob.toDate(json.startedTime),
+            completed: PrintingJob.toDate(json.completedTime)
+        };
+    };
     PrintingJob.decode = function (rawPrintingJob) {
         return {
             id: rawPrintingJob.identifier.identifier,
@@ -582,6 +640,15 @@ var PrintingJob = (function () {
             started: PrintingJob.toDate(rawPrintingJob.startedTime),
             completed: PrintingJob.toDate(rawPrintingJob.completedTime)
         };
+    };
+    PrintingJob.equals = function (p1, p2) {
+        if (p1 && p2 && p1.id && p2.id) {
+            return p1.id === p2.id;
+        }
+        return false;
+    };
+    PrintingJob.toString = function (p1) {
+        return JSON.stringify(p1);
     };
     PrintingJob.toDate = function (timeStamp) {
         return timeStamp ? new Date(timeStamp) : null;
@@ -627,6 +694,31 @@ var RestService = (function () {
     ], RestService);
     return RestService;
 }());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/rxjs-operators.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_rxjs_add_observable_throw__ = __webpack_require__("../../../../rxjs/_esm5/add/observable/throw.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_add_operator_catch__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/catch.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_debounceTime__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/debounceTime.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_operator_distinctUntilChanged__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/distinctUntilChanged.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/map.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_switchMap__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/switchMap.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_toPromise__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/toPromise.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_toPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_toPromise__);
+// Statics
+
+// Operators
+
+
+
+
+
 
 
 

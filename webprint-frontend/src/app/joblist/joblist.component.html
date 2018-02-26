@@ -3,16 +3,18 @@
     <tr>
       <th scope="col">#</th>
       <th scope="col">Document</th>
-      <th scope="col">Issued (yyyy-MM-dd)</th>
-      <th scope="col">Completed (yyyy-MM-dd)</th>
+      <th scope="col">Created</th>
+      <th scope="col">Started</th>
+      <th scope="col">Completed</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let job of printingJobs; let i=index;">
       <th scope="row">{{ i }}</th>
       <td>{{ job.name }}</td>
-      <td>{{ job.created | date:'yyyy-MM-dd'}}</td>
-      <td>{{ job.completed | date:'yyyy-MM-dd' }}</td>
+      <td>{{ job.created | date:'yyyy-MM-ddThh:mm:ss'}}</td>
+      <td>{{ job.started | date:'yyyy-MM-ddThh:mm:ss'}}</td>
+      <td>{{ job.completed | date:'yyyy-MM-ddThh:mm:ss' }}</td>
     </tr>
   </tbody>
 </table>

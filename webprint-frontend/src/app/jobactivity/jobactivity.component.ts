@@ -21,6 +21,8 @@ export class JobactivityComponent implements OnInit, DataListener {
   }
 
   update(printingJobs: PrintingJob[]) {
+    this.setActiveJob(null);
+
     printingJobs.forEach(printingJob => {
       if( printingJob.started !== null && printingJob.completed === null ) {
         this.setActiveJob(printingJob);
