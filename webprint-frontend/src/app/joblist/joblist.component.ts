@@ -1,29 +1,36 @@
 import { Component, OnInit } from '@angular/core';
 
 import { PrintingJob } from '../printing-job';
+import { RawPrintingJobList } from '../raw-printing-job-list'
 import { RestService } from '../rest.service';
+import { DataService } from '../data.service';
+import { DataListener } from '../data-listener';
 
 @Component({
   selector: 'app-joblist',
   templateUrl: './joblist.component.html',
   styleUrls: ['./joblist.component.css']
 })
-export class JoblistComponent implements OnInit {
+export class JoblistComponent implements OnInit, DataListener {
 
   // Variables
   printingJobs: PrintingJob[];
 
   // Methods
-  constructor(private restService: RestService) {
+  constructor(private restService: RestService,
+    private dataService: DataService) {
   }
 
   ngOnInit() {
-    this.restService.fetchPrintingJobs().subscribe(data => this.setPrintingJobs(data));
+    this.dataService.addListener(this);
+
+    this.restService.fetchPrintingJobs()
+      .subscribe(data => this.dataService.loadPrintingJobs(data));
   }
 
-  setPrintingJobs(printingJobs: PrintingJob[]) {
+  update(printingJobs: PrintingJob[]) {
     this.printingJobs = printingJobs;
-    console.log("updated printingJobs " + printingJobs.length);
   }
+
 
 }

@@ -6,20 +6,7 @@ import { Observable } from 'rxjs/Rx'
 import { FileDropModule, UploadFile, UploadEvent } from 'ngx-file-drop';
 
 import { PrintingJob } from './printing-job'
-
-
-class RawPrintingJob {
-  id: string;
-  name: string;
-  created: number;
-  started: number;
-  completed: number;
-  fileContents: string;
-}
-
-class RawPrintingJobs {
-  printingJobs: RawPrintingJob[];
-}
+import { RawPrintingJobList } from './raw-printing-job-list'
 
 @Injectable()
 export class RestService {
@@ -34,29 +21,8 @@ export class RestService {
     this.RX_BASE_URL = "http://localhost:8181";
   }
 
-  fetchPrintingJobs() {
-    return this.http.get<RawPrintingJobs>(this.RX_BASE_URL + '/api/job')
-      .map(data => {
-        var printingJobs: PrintingJob[] = [];
-
-        data.printingJobs.forEach(rawPrintingJob => {
-          var printingJob = PrintingJob.decode(rawPrintingJob);
-          printingJobs.push(printingJob);
-        });
-
-        return printingJobs;
-      });
-  }
-
-  fetchActiveJob() {
-    return this.http.get<RawPrintingJobs>(this.RX_BASE_URL + '/api/job?active=true')
-      .map(data => {
-        if( data.printingJobs.length > 0 ) {
-          return PrintingJob.decode(data.printingJobs[0]);
-        } else {
-          return null;
-        }
-      });
+  fetchPrintingJobs(): Observable<RawPrintingJobList> {
+    return this.http.get<RawPrintingJobList>(this.RX_BASE_URL + '/api/job');
   }
 
 }

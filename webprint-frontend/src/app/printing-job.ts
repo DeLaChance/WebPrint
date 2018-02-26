@@ -1,3 +1,5 @@
+import { RawPrintingJob } from './raw-printing-job'
+
 export class PrintingJob {
 
   id: string;
@@ -6,23 +8,14 @@ export class PrintingJob {
   started: Date;
   completed: Date;
 
-  static encode(printingJob: PrintingJob): any {
+  static decode(rawPrintingJob: RawPrintingJob): PrintingJob {
     return {
-      name: printingJob.name,
-      id: printingJob.id,
-      created: printingJob.created.toString(),
-      started: printingJob.started.toString(),
-      completed: printingJob.completed.toString()
+      id: rawPrintingJob.identifier.identifier,
+      name: rawPrintingJob.fileName,
+      created: new Date(rawPrintingJob.createdTime),
+      started: new Date(rawPrintingJob.startedTime),
+      completed: new Date(rawPrintingJob.completedTime)
     };
   }
 
-  static decode(printingJobJson: any): PrintingJob {
-    return {
-      id: printingJobJson.id,
-      name: printingJobJson.name,
-      created: new Date(printingJobJson.created),
-      started: new Date(printingJobJson.started),
-      completed: new Date(printingJobJson.completed)
-    };
-  }
 }

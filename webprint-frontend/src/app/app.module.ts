@@ -13,6 +13,7 @@ import { OverviewComponent } from './overview/overview.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 
 import { RestService } from './rest.service';
+import { DataService } from './data.service';
 
 const appRoutes: Routes = [
   { path: 'new', component: DraganddropComponent },
@@ -41,7 +42,7 @@ const appRoutes: Routes = [
       { enableTracing: true } // <-- debugging purposes only
     )
   ],
-  providers: [ RestService ],
+  providers: [ RestService, DataService ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

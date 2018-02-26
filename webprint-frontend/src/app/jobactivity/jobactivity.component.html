@@ -1,4 +1,4 @@
-<div *ngIf="activeJob !== null; then thenBlock else elseBlock"></div>
+<div *ngIf="activeJob; then thenBlock else elseBlock"></div>
 <ng-template #thenBlock>
   <table datatable class="table table-striped table-hover">
     <thead>
