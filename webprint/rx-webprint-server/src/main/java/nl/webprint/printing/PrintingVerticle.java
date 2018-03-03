@@ -141,7 +141,7 @@ public class PrintingVerticle extends AbstractVerticle {
 					.flatMap(printingJob -> { 
 						return this.printingJobRepository.rxUpdate(printingJob)
 							.andThen(Single.just(printingJob));
-					})					
+					})
 					.subscribe(
 						printingJob -> {
 							this.vertx.eventBus().publish("notifications.printing-job", printingJob.toJson());

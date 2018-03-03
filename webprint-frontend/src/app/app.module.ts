@@ -11,6 +11,8 @@ import { JobactivityComponent } from './jobactivity/jobactivity.component';
 import { DraganddropComponent } from './draganddrop/draganddrop.component';
 import { OverviewComponent } from './overview/overview.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {MatButtonModule, MatCheckboxModule} from '@angular/material';
 
 import { RestService } from './rest.service';
 import { DataService } from './data.service';
@@ -63,6 +65,9 @@ const stompConfig: StompConfig = {
     DataTablesModule,
     HttpClientModule,
     FileDropModule,
+    BrowserAnimationsModule,
+    MatButtonModule,
+    MatCheckboxModule,
     RouterModule.forRoot(
       appRoutes,
       { enableTracing: true } // <-- debugging purposes only
