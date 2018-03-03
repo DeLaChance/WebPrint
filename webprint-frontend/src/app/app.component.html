@@ -1,25 +1,9 @@
-<nav class="navbar navbar-light" style="background-color: #e3f2fd;">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="/">{{ title }}</a>
-    </div>
+<mat-toolbar color="primary">
+  <mat-icon svgIcon="print"></mat-icon>
+  <a mat-button [routerLink]="'/'" routerLinkActive="selected-nav">Webprint</a>
+  <a mat-button [routerLink]="'/new'" routerLinkActive="selected-nav">New</a>
+  <a mat-button [routerLink]="'/active'" routerLinkActive="selected-nav">Active</a>
+  <a mat-button [routerLink]="'/list'" routerLinkActive="selected-nav">List</a>
+</mat-toolbar>
 
-    <ul class="nav navbar-nav">
-      <li class="active">
-        <a routerLink="/" routerLinkActive="active">Overview</a>
-      </li>
-      <li>
-        <a routerLink="/new" routerLinkActive="active">New</a>
-      </li>
-      <li>
-        <a routerLink="/active" routerLinkActive="active">Active job</a>
-      </li>
-      <li>
-        <a routerLink="/list" routerLinkActive="active">Job list</a>
-      </li>
-
-    </ul>
-</nav>
-
-<div class="container-fluid">
-  <router-outlet></router-outlet>
-</div>
+<router-outlet></router-outlet>
