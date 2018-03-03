@@ -3,6 +3,10 @@ import { FileDropModule, UploadFile, UploadEvent } from 'ngx-file-drop';
 
 import { RestService } from '../rest.service';
 
+import { MatDialog } from '@angular/material'
+
+import { DragAndDropImporterComponent } from './drag-and-drop-importer.component'
+
 @Component({
   selector: 'app-draganddrop',
   templateUrl: './draganddrop.component.html',
@@ -10,28 +14,18 @@ import { RestService } from '../rest.service';
 })
 export class DraganddropComponent implements OnInit {
 
-  public files: UploadFile[] = [];
+  constructor(private dialog: MatDialog) {
 
-  constructor(private restService: RestService) { }
+  }
 
   ngOnInit() {
   }
 
-  public dropped(event: UploadEvent) {
-    this.files = event.files;
-    for (var file of event.files) {
-      file.fileEntry.file(info => {
-        console.log(info);
-      });
-    }
-  }
-
-  public fileOver(event){
-    console.log(event);
-  }
-
-  public fileLeave(event){
-    console.log(event);
+  public addPrintingJob() {
+    this.dialog.open(DragAndDropImporterComponent, {
+      minHeight: '160px',
+      minWidth: '600px'
+    });
   }
 
 }

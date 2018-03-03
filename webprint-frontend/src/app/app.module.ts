@@ -17,7 +17,9 @@ import { RestService } from './rest.service';
 import { DataService } from './data.service';
 import { StompConfig, StompService } from '@stomp/ng2-stompjs';
 
-import { MatTableModule, MatToolbarModule, MatButtonModule, MatIconModule } from '@angular/material';
+import { MatTableModule, MatToolbarModule, MatButtonModule, MatIconModule
+  , MatDividerModule, MatDialogModule } from '@angular/material';
+import { DragAndDropImporterComponent } from './draganddrop/drag-and-drop-importer.component';
 
 const appRoutes: Routes = [
   { path: 'new', component: DraganddropComponent },
@@ -59,7 +61,8 @@ const stompConfig: StompConfig = {
     JobactivityComponent,
     DraganddropComponent,
     PageNotFoundComponent,
-    OverviewComponent
+    OverviewComponent,
+    DragAndDropImporterComponent
   ],
   imports: [
     BrowserModule,
@@ -71,6 +74,8 @@ const stompConfig: StompConfig = {
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
+    MatDividerModule,
+    MatDialogModule,
     RouterModule.forRoot(
       appRoutes,
       { enableTracing: true } // <-- debugging purposes only
@@ -82,6 +87,9 @@ const stompConfig: StompConfig = {
       provide: StompConfig,
       useValue: stompConfig
     }
+  ],
+  entryComponents: [
+    DragAndDropImporterComponent
   ],
   bootstrap: [AppComponent]
 })
