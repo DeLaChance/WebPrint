@@ -23,7 +23,6 @@ import { MatTableModule, MatToolbarModule, MatButtonModule, MatIconModule
 import { DragAndDropImporterComponent } from './draganddrop/drag-and-drop-importer.component';
 
 const appRoutes: Routes = [
-  { path: 'new', component: DraganddropComponent },
   { path: 'active', component: JobactivityComponent },
   { path: 'list', component: JoblistComponent },
   { path: '', component: OverviewComponent },

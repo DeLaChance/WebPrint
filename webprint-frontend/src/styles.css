@@ -1,1 +1,7 @@
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
+
+button.br-corner {
+  position: fixed;
+  right: 30px;
+  bottom: 30px;
+}
