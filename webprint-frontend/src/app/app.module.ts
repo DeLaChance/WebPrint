@@ -12,11 +12,12 @@ import { DraganddropComponent } from './draganddrop/draganddrop.component';
 import { OverviewComponent } from './overview/overview.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {MatButtonModule, MatCheckboxModule} from '@angular/material';
 
 import { RestService } from './rest.service';
 import { DataService } from './data.service';
-import {StompConfig, StompService} from '@stomp/ng2-stompjs';
+import { StompConfig, StompService } from '@stomp/ng2-stompjs';
+
+import { MatTableModule } from '@angular/material';
 
 const appRoutes: Routes = [
   { path: 'new', component: DraganddropComponent },
@@ -66,8 +67,7 @@ const stompConfig: StompConfig = {
     HttpClientModule,
     FileDropModule,
     BrowserAnimationsModule,
-    MatButtonModule,
-    MatCheckboxModule,
+    MatTableModule,
     RouterModule.forRoot(
       appRoutes,
       { enableTracing: true } // <-- debugging purposes only

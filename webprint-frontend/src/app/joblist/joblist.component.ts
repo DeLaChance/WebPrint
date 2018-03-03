@@ -6,6 +6,8 @@ import { RestService } from '../rest.service';
 import { DataService } from '../data.service';
 import { DataListener } from '../data-listener';
 
+import { MatTableDataSource } from '@angular/material';
+
 @Component({
   selector: 'app-joblist',
   templateUrl: './joblist.component.html',
@@ -15,6 +17,7 @@ export class JoblistComponent implements OnInit, DataListener {
 
   // Variables
   printingJobs: PrintingJob[];
+  columnsToDisplay = [ "identifier", "name", "created", "started", "completed" ];
 
   // Methods
   constructor(private restService: RestService,
