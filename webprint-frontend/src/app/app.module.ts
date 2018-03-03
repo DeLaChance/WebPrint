@@ -4,6 +4,7 @@ import { DataTablesModule } from 'angular-datatables';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
 import { FileDropModule } from 'ngx-file-drop';
+import { DropzoneModule } from 'ngx-dropzone-wrapper';
 
 import { AppComponent } from './app.component';
 import { JoblistComponent } from './joblist/joblist.component';
@@ -76,6 +77,7 @@ const stompConfig: StompConfig = {
     MatIconModule,
     MatDividerModule,
     MatDialogModule,
+    DropzoneModule,
     RouterModule.forRoot(
       appRoutes,
       { enableTracing: true } // <-- debugging purposes only

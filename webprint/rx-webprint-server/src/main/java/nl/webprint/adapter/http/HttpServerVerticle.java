@@ -98,9 +98,11 @@ public class HttpServerVerticle extends AbstractVerticle {
 		final Router router = Router.router(this.vertx.getDelegate());
 		
 		router.route().handler(CorsHandler.create("*")
+			.allowedHeader("*")
 			.allowedMethod(HttpMethod.GET)
 			.allowedMethod(HttpMethod.POST)
 			.allowedMethod(HttpMethod.OPTIONS)
+			.allowedMethod(HttpMethod.DELETE)
 		);
 		
 		router.route("/").handler(routingContext -> {

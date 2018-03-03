@@ -1,6 +1,7 @@
 <h2 mat-dialog-title>Add a printing job</h2>
 <mat-dialog-content>
-  TODO: add dropzone
+  <dropzone [config]="dropZoneConfig" [message]="'Click or drag a file to add it
+    to the queue.'"></dropzone>
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button mat-dialog-close>Done</button>
