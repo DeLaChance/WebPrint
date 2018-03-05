@@ -15,9 +15,6 @@ export class RestService {
   private RX_BASE_URL: string;
 
   constructor(private http: HttpClient) {
-    this.BASE_URL = "http://localhost:8081";
-
-    // Alternative verticle to test RxJava
     this.RX_BASE_URL = "http://localhost:8181";
   }
 

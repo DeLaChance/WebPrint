@@ -26,9 +26,6 @@ export class JoblistComponent implements OnInit, DataListener {
 
   ngOnInit() {
     this.dataService.addListener(this);
-
-    this.restService.fetchPrintingJobs()
-      .subscribe(data => this.dataService.loadPrintingJobs(data));
   }
 
   update(printingJobs: PrintingJob[]) {

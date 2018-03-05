@@ -4,9 +4,11 @@ import { PrintingJob } from './printing-job';
 import { DataListener } from './data-listener';
 import { RawPrintingJobList } from './raw-printing-job-list';
 import { RawPrintingJob } from './raw-printing-job';
+import { RestService } from './rest.service'
 
 import { Message } from '@stomp/stompjs';
 import { StompService } from '@stomp/ng2-stompjs';
+import { Observable } from 'rxjs/Rx';
 import './rxjs-operators';
 
 @Injectable()
@@ -16,7 +18,7 @@ export class DataService {
   dataListeners: DataListener[];
   stomp_subscription: any;
 
-  constructor(private _stompService: StompService) {
+  constructor(private _stompService: StompService, private restService: RestService) {
     this.dataListeners = [];
 
     this.stomp_subscription = this._stompService.subscribe('notifications.printing-job');
@@ -27,6 +29,12 @@ export class DataService {
       var json = JSON.parse(msg_body);
       var printingJob = PrintingJob.decodeJson(json);
       this.updateSingle(printingJob);
+    });
+
+    let timer = Observable.timer(0, 10000);
+    timer.subscribe(t => {
+      this.restService.fetchPrintingJobs()
+        .subscribe(data => this.loadPrintingJobs(data));
     });
   }
 

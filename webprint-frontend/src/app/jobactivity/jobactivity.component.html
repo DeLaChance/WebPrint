@@ -1,22 +1,20 @@
 <div *ngIf="activeJob; then thenBlock else elseBlock"></div>
 <ng-template #thenBlock>
-  <table datatable class="table table-striped table-hover">
-    <thead>
-      <tr>
-        <th scope="col">Document</th>
-        <th scope="col">Issued</th>
-        <th scope="col">Started</th>
-        <th scope="col">Completed</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>{{ activeJob.name }}</td>
-        <td>{{ activeJob.created | date:'yyyy-MM-ddThh:mm:ss'}}</td>
-        <td>{{ activeJob.started | date:'yyyy-MM-ddThh:mm:ss'}}</td>
-        <td>{{ activeJob.completed | date:'yyyy-MM-ddThh:mm:ss' }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Active printing job</mat-card-title>
+      <mat-card-subtitle>{{ activeJob.name }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p>
+        Created: {{ activeJob.created | dateToAgo }} ago
+        <br>
+        Running since: {{ activeJob.started | dateToAgo }} ago
+      </p>
+    </mat-card-content>
+    <mat-spinner [diameter]="20.0"></mat-spinner>
+  </mat-card>
 </ng-template>
-<ng-template #elseBlock>No active job at the moment</ng-template>
+<ng-template #elseBlock>
+  <mat-card>No printing job active at the moment</mat-card>
+</ng-template>

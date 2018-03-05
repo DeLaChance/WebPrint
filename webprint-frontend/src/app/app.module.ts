@@ -19,8 +19,10 @@ import { DataService } from './data.service';
 import { StompConfig, StompService } from '@stomp/ng2-stompjs';
 
 import { MatTableModule, MatToolbarModule, MatButtonModule, MatIconModule
-  , MatDividerModule, MatDialogModule } from '@angular/material';
+  , MatDividerModule, MatDialogModule, MatCardModule } from '@angular/material';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { DragAndDropImporterComponent } from './draganddrop/drag-and-drop-importer.component';
+import { DateToAgoPipe } from './jobactivity/date.to.ago.pipe'
 
 const appRoutes: Routes = [
   { path: 'active', component: JobactivityComponent },
@@ -62,7 +64,8 @@ const stompConfig: StompConfig = {
     DraganddropComponent,
     PageNotFoundComponent,
     OverviewComponent,
-    DragAndDropImporterComponent
+    DragAndDropImporterComponent,
+    DateToAgoPipe
   ],
   imports: [
     BrowserModule,
@@ -77,6 +80,8 @@ const stompConfig: StompConfig = {
     MatDividerModule,
     MatDialogModule,
     DropzoneModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
     RouterModule.forRoot(
       appRoutes,
       { enableTracing: true } // <-- debugging purposes only
