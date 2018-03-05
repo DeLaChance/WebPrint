@@ -38,7 +38,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<mat-toolbar color=\"primary\">\n  <mat-icon svgIcon=\"print\"></mat-icon>\n  <a mat-button [routerLink]=\"'/'\" routerLinkActive=\"selected-nav\">Webprint</a>\n  <a mat-button [routerLink]=\"'/new'\" routerLinkActive=\"selected-nav\">New</a>\n  <a mat-button [routerLink]=\"'/active'\" routerLinkActive=\"selected-nav\">Active</a>\n  <a mat-button [routerLink]=\"'/list'\" routerLinkActive=\"selected-nav\">List</a>\n</mat-toolbar>\n\n<router-outlet></router-outlet>\n"
+module.exports = "<mat-toolbar color=\"primary\">\n  <mat-icon svgIcon=\"print\"></mat-icon>\n  <a mat-button [routerLink]=\"'/'\" routerLinkActive=\"selected-nav\">Webprint</a>\n</mat-toolbar>\n\n<router-outlet></router-outlet>\n"
 
 /***/ }),
 
@@ -74,7 +74,7 @@ var AppComponent = (function () {
             template: __webpack_require__("../../../../../src/app/app.component.html"),
             styles: [__webpack_require__("../../../../../src/app/app.component.css")]
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_material__["f" /* MatIconRegistry */], __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser__["c" /* DomSanitizer */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_material__["g" /* MatIconRegistry */], __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser__["c" /* DomSanitizer */]])
     ], AppComponent);
     return AppComponent;
 }());
@@ -106,7 +106,9 @@ var AppComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__data_service__ = __webpack_require__("../../../../../src/app/data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__stomp_ng2_stompjs__ = __webpack_require__("../../../../@stomp/ng2-stompjs/@stomp/ng2-stompjs.es5.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__angular_material__ = __webpack_require__("../../../material/esm5/material.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__draganddrop_drag_and_drop_importer_component__ = __webpack_require__("../../../../../src/app/draganddrop/drag-and-drop-importer.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__angular_material_progress_spinner__ = __webpack_require__("../../../material/esm5/progress-spinner.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__draganddrop_drag_and_drop_importer_component__ = __webpack_require__("../../../../../src/app/draganddrop/drag-and-drop-importer.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__jobactivity_date_to_ago_pipe__ = __webpack_require__("../../../../../src/app/jobactivity/date.to.ago.pipe.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -132,8 +134,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
+
+
 var appRoutes = [
-    { path: 'new', component: __WEBPACK_IMPORTED_MODULE_10__draganddrop_draganddrop_component__["a" /* DraganddropComponent */] },
     { path: 'active', component: __WEBPACK_IMPORTED_MODULE_9__jobactivity_jobactivity_component__["a" /* JobactivityComponent */] },
     { path: 'list', component: __WEBPACK_IMPORTED_MODULE_8__joblist_joblist_component__["a" /* JoblistComponent */] },
     { path: '', component: __WEBPACK_IMPORTED_MODULE_11__overview_overview_component__["a" /* OverviewComponent */] },
@@ -168,7 +171,8 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_10__draganddrop_draganddrop_component__["a" /* DraganddropComponent */],
                 __WEBPACK_IMPORTED_MODULE_12__page_not_found_page_not_found_component__["a" /* PageNotFoundComponent */],
                 __WEBPACK_IMPORTED_MODULE_11__overview_overview_component__["a" /* OverviewComponent */],
-                __WEBPACK_IMPORTED_MODULE_18__draganddrop_drag_and_drop_importer_component__["a" /* DragAndDropImporterComponent */]
+                __WEBPACK_IMPORTED_MODULE_19__draganddrop_drag_and_drop_importer_component__["a" /* DragAndDropImporterComponent */],
+                __WEBPACK_IMPORTED_MODULE_20__jobactivity_date_to_ago_pipe__["a" /* DateToAgoPipe */]
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
@@ -176,13 +180,15 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_3__angular_common_http__["b" /* HttpClientModule */],
                 __WEBPACK_IMPORTED_MODULE_5_ngx_file_drop__["a" /* FileDropModule */],
                 __WEBPACK_IMPORTED_MODULE_13__angular_platform_browser_animations__["a" /* BrowserAnimationsModule */],
-                __WEBPACK_IMPORTED_MODULE_17__angular_material__["g" /* MatTableModule */],
-                __WEBPACK_IMPORTED_MODULE_17__angular_material__["h" /* MatToolbarModule */],
+                __WEBPACK_IMPORTED_MODULE_17__angular_material__["h" /* MatTableModule */],
+                __WEBPACK_IMPORTED_MODULE_17__angular_material__["i" /* MatToolbarModule */],
                 __WEBPACK_IMPORTED_MODULE_17__angular_material__["a" /* MatButtonModule */],
-                __WEBPACK_IMPORTED_MODULE_17__angular_material__["e" /* MatIconModule */],
-                __WEBPACK_IMPORTED_MODULE_17__angular_material__["d" /* MatDividerModule */],
-                __WEBPACK_IMPORTED_MODULE_17__angular_material__["c" /* MatDialogModule */],
+                __WEBPACK_IMPORTED_MODULE_17__angular_material__["f" /* MatIconModule */],
+                __WEBPACK_IMPORTED_MODULE_17__angular_material__["e" /* MatDividerModule */],
+                __WEBPACK_IMPORTED_MODULE_17__angular_material__["d" /* MatDialogModule */],
                 __WEBPACK_IMPORTED_MODULE_6_ngx_dropzone_wrapper__["a" /* DropzoneModule */],
+                __WEBPACK_IMPORTED_MODULE_17__angular_material__["b" /* MatCardModule */],
+                __WEBPACK_IMPORTED_MODULE_18__angular_material_progress_spinner__["a" /* MatProgressSpinnerModule */],
                 __WEBPACK_IMPORTED_MODULE_4__angular_router__["a" /* RouterModule */].forRoot(appRoutes, { enableTracing: true } // <-- debugging purposes only
                 )
             ],
@@ -194,7 +200,7 @@ var AppModule = (function () {
                 }
             ],
             entryComponents: [
-                __WEBPACK_IMPORTED_MODULE_18__draganddrop_drag_and_drop_importer_component__["a" /* DragAndDropImporterComponent */]
+                __WEBPACK_IMPORTED_MODULE_19__draganddrop_drag_and_drop_importer_component__["a" /* DragAndDropImporterComponent */]
             ],
             bootstrap: [__WEBPACK_IMPORTED_MODULE_7__app_component__["a" /* AppComponent */]]
         })
@@ -213,8 +219,10 @@ var AppModule = (function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DataService; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__printing_job__ = __webpack_require__("../../../../../src/app/printing-job.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__stomp_ng2_stompjs__ = __webpack_require__("../../../../@stomp/ng2-stompjs/@stomp/ng2-stompjs.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__rxjs_operators__ = __webpack_require__("../../../../../src/app/rxjs-operators.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__rest_service__ = __webpack_require__("../../../../../src/app/rest.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__stomp_ng2_stompjs__ = __webpack_require__("../../../../@stomp/ng2-stompjs/@stomp/ng2-stompjs.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Rx__ = __webpack_require__("../../../../rxjs/_esm5/Rx.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__rxjs_operators__ = __webpack_require__("../../../../../src/app/rxjs-operators.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -228,10 +236,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
+
 var DataService = (function () {
-    function DataService(_stompService) {
+    function DataService(_stompService, restService) {
         var _this = this;
         this._stompService = _stompService;
+        this.restService = restService;
         this.dataListeners = [];
         this.stomp_subscription = this._stompService.subscribe('notifications.printing-job');
         this.stomp_subscription.map(function (message) {
@@ -240,6 +251,11 @@ var DataService = (function () {
             var json = JSON.parse(msg_body);
             var printingJob = __WEBPACK_IMPORTED_MODULE_1__printing_job__["a" /* PrintingJob */].decodeJson(json);
             _this.updateSingle(printingJob);
+        });
+        var timer = __WEBPACK_IMPORTED_MODULE_4_rxjs_Rx__["a" /* Observable */].timer(0, 10000);
+        timer.subscribe(function (t) {
+            _this.restService.fetchPrintingJobs()
+                .subscribe(function (data) { return _this.loadPrintingJobs(data); });
         });
     }
     DataService.prototype.addListener = function (listener) {
@@ -280,7 +296,7 @@ var DataService = (function () {
     };
     DataService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["C" /* Injectable */])(),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_2__stomp_ng2_stompjs__["b" /* StompService */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_3__stomp_ng2_stompjs__["b" /* StompService */], __WEBPACK_IMPORTED_MODULE_2__rest_service__["a" /* RestService */]])
     ], DataService);
     return DataService;
 }());
@@ -377,7 +393,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/draganddrop/draganddrop.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <div class=\"center\">\n    <!-- Classical way to do it\n    <iframe name=\"hiddenFrame\" width=\"0\" height=\"0\" border=\"0\" style=\"display: none;\"></iframe>\n    <form action=\"http://localhost:8181/api/job\" ENCTYPE=\"multipart/form-data\" method=\"POST\" name=\"classic\" target=\"hiddenFrame\">\n        Upload a file:<input type=\"file\" name=\"myfile\"/><br>\n        <button class=\"btn btn-primary\" type=\"submit\">Upload files</button>\n    </form>\n  </div>-->\n\n  <button mat-fab (click)=\"addPrintingJob()\">\n    <mat-icon svgIcon=\"add\"></mat-icon>\n  </button>\n</div>\n"
+module.exports = "<button mat-fab class=\"br-corner\" (click)=\"addPrintingJob()\">\n  <mat-icon svgIcon=\"add\"></mat-icon>\n</button>\n"
 
 /***/ }),
 
@@ -419,9 +435,61 @@ var DraganddropComponent = (function () {
             template: __webpack_require__("../../../../../src/app/draganddrop/draganddrop.component.html"),
             styles: [__webpack_require__("../../../../../src/app/draganddrop/draganddrop.component.css")]
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_material__["b" /* MatDialog */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_material__["c" /* MatDialog */]])
     ], DraganddropComponent);
     return DraganddropComponent;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/jobactivity/date.to.ago.pipe.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DateToAgoPipe; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var DateToAgoPipe = (function () {
+    function DateToAgoPipe() {
+    }
+    DateToAgoPipe.prototype.transform = function (date) {
+        var seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+        var interval = Math.floor(seconds / 31536000);
+        if (interval > 1) {
+            return interval + " years";
+        }
+        interval = Math.floor(seconds / 2592000);
+        if (interval > 1) {
+            return interval + " months";
+        }
+        interval = Math.floor(seconds / 86400);
+        if (interval > 1) {
+            return interval + " days";
+        }
+        interval = Math.floor(seconds / 3600);
+        if (interval > 1) {
+            return interval + " hours";
+        }
+        interval = Math.floor(seconds / 60);
+        if (interval > 1) {
+            return interval + " minutes";
+        }
+        return Math.floor(seconds) + " seconds";
+    };
+    DateToAgoPipe = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["V" /* Pipe */])({
+            name: "dateToAgo"
+        })
+    ], DateToAgoPipe);
+    return DateToAgoPipe;
 }());
 
 
@@ -449,7 +517,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/jobactivity/jobactivity.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div *ngIf=\"activeJob; then thenBlock else elseBlock\"></div>\n<ng-template #thenBlock>\n  <table datatable class=\"table table-striped table-hover\">\n    <thead>\n      <tr>\n        <th scope=\"col\">Document</th>\n        <th scope=\"col\">Issued</th>\n        <th scope=\"col\">Started</th>\n        <th scope=\"col\">Completed</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td>{{ activeJob.name }}</td>\n        <td>{{ activeJob.created | date:'yyyy-MM-ddThh:mm:ss'}}</td>\n        <td>{{ activeJob.started | date:'yyyy-MM-ddThh:mm:ss'}}</td>\n        <td>{{ activeJob.completed | date:'yyyy-MM-ddThh:mm:ss' }}</td>\n      </tr>\n    </tbody>\n  </table>\n</ng-template>\n<ng-template #elseBlock>No active job at the moment</ng-template>\n"
+module.exports = "<div *ngIf=\"activeJob; then thenBlock else elseBlock\"></div>\n<ng-template #thenBlock>\n  <mat-card>\n    <mat-card-header>\n      <mat-card-title>Active printing job</mat-card-title>\n      <mat-card-subtitle>{{ activeJob.name }}</mat-card-subtitle>\n    </mat-card-header>\n    <mat-card-content>\n      <p>\n        Created: {{ activeJob.created | dateToAgo }} ago\n        <br>\n        Running since: {{ activeJob.started | dateToAgo }} ago\n      </p>\n    </mat-card-content>\n    <mat-spinner [diameter]=\"20.0\"></mat-spinner>\n  </mat-card>\n</ng-template>\n<ng-template #elseBlock>\n  <mat-card>No printing job active at the moment</mat-card>\n</ng-template>\n"
 
 /***/ }),
 
@@ -559,10 +627,7 @@ var JoblistComponent = (function () {
         this.columnsToDisplay = ["identifier", "name", "created", "started", "completed"];
     }
     JoblistComponent.prototype.ngOnInit = function () {
-        var _this = this;
         this.dataService.addListener(this);
-        this.restService.fetchPrintingJobs()
-            .subscribe(function (data) { return _this.dataService.loadPrintingJobs(data); });
     };
     JoblistComponent.prototype.update = function (printingJobs) {
         this.printingJobs = printingJobs;
@@ -604,7 +669,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/overview/overview.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<mat-divider></mat-divider>\n<app-jobactivity></app-jobactivity>\n<mat-divider></mat-divider>\n<app-joblist></app-joblist>\n<mat-divider></mat-divider>\n"
+module.exports = "<mat-divider></mat-divider>\n<app-jobactivity></app-jobactivity>\n<mat-divider></mat-divider>\n<app-joblist></app-joblist>\n<mat-divider></mat-divider>\n<app-draganddrop></app-draganddrop>\n"
 
 /***/ }),
 
@@ -771,8 +836,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var RestService = (function () {
     function RestService(http) {
         this.http = http;
-        this.BASE_URL = "http://localhost:8081";
-        // Alternative verticle to test RxJava
         this.RX_BASE_URL = "http://localhost:8181";
     }
     RestService.prototype.fetchPrintingJobs = function () {

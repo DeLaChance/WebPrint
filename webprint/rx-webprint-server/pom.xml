@@ -14,6 +14,11 @@
   <properties>
     <java.version>1.8</java.version>
   
+    <gatling.version>2.3.0</gatling.version>
+    <gatling-plugin.version>2.2.4</gatling-plugin.version>
+    <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
+    <scala.version>2.12.4</scala.version>
+  
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   
@@ -112,11 +117,21 @@
   		<version>1.16.20</version>
   		<scope>provided</scope>
   	</dependency>
+    
 
+    <!--  unit testing -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <!-- performance and integration testing -->
+    <dependency>
+      <groupId>io.gatling.highcharts</groupId>
+      <artifactId>gatling-charts-highcharts</artifactId>
+      <version>X.Y.Z</version>
       <scope>test</scope>
     </dependency>
     
@@ -165,6 +180,103 @@
                 <appid>rx-webprint-server</appid>
                 <verticle>nl.webprint.Standalone</verticle>
             </configuration>
+        </plugin>
+        
+        <plugin>
+          <groupId>net.alchim31.maven</groupId>
+          <artifactId>scala-maven-plugin</artifactId>
+          <version>${scala-maven-plugin.version}</version>
+          
+          <configuration>
+            <scalaVersion>${scala.version}</scalaVersion>
+          </configuration>
+        </plugin>
+        
+        <plugin>
+          <groupId>com.soebes.maven.plugins</groupId>
+          <artifactId>iterator-maven-plugin</artifactId>
+          <version>0.5.0</version>
+          
+          <executions>
+            <execution>
+              <phase>integration-test</phase>
+              <goals>
+                <goal>iterator</goal>
+              </goals>
+              <configuration>
+                <items>
+                  <item>nl.webprint.PrintJobsScenario</item>
+                </items>
+                
+                <pluginExecutors>
+                
+                  <pluginExecutor>
+                    <plugin>
+                      <groupId>com.bazaarvoice.maven.plugins</groupId>
+                      <artifactId>process-exec-maven-plugin</artifactId>
+                      <version>0.7</version>
+                    </plugin>
+                    
+                    <goal>start</goal>
+                    <configuration>
+                      <name>start-sqr</name>
+                      
+                      <waitForInterrupt>false</waitForInterrupt>
+                      <waitAfterLuanch>5</waitAfterLuanch>
+                      <arguments>
+                        <argument>java</argument>
+                        <argument>-jar</argument>
+                        <argument>-${project.basedir}/target/rx-webprint-server.jar</argument>
+                        <argument>--vertx-id=webprint</argument>
+                        <argument>run</argument>
+                        <argument>nl.webprint.Standalone</argument>
+                      </arguments>
+                    </configuration>
+                    
+                  </pluginExecutor>
+                  
+                  <pluginExecutor>
+                    <plugin>
+                      <groupId>io.gatling</groupId>
+                      <artifactId>gatling-maven-plugin</artifactId>
+                      <version>${gatling-plugin.version}</version>
+                    </plugin>
+                    <goal>integration-test</goal>
+                    <configuration>
+                      <simulationClass>@item@</simulationClass>
+                      <simulationsFolder>${project.basedir}/src/test/integration-test/scala</simulationsFolder>
+                      <configFolder>${project.basedir}/src/test/integration-test/resources</configFolder>
+                      <failOnError>true</failOnError>
+                    </configuration>
+                  </pluginExecutor>
+                  
+                  <pluginExecutor>
+                    <plugin>
+                      <groupId>com.bazaarvoice.maven.plugins</groupId>
+                      <artifactId>process-exec-maven-plugin</artifactId>
+                      <version>0.7</version>
+                    </plugin>
+                    
+                    <goal>start</goal>
+                    <configuration>
+                      <name>start-sqr</name>
+                      
+                      <waitForInterrupt>false</waitForInterrupt>
+                      <waitAfterLuanch>5</waitAfterLuanch>
+                      <arguments>
+                        <argument>java</argument>
+                        <argument>-jar</argument>
+                        <argument>-${project.basedir}/target/rx-webprint-server.jar</argument>
+                        <argument>stop</argument>
+                        <argument>webprint</argument>
+                      </arguments>
+                    </configuration>
+                  </pluginExecutor>
+                </pluginExecutors>
+              </configuration>
+            
+            </execution>
+          </executions>
         </plugin>
     
     </plugins>

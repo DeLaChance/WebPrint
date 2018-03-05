@@ -97,7 +97,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 exports.i(__webpack_require__("../../../../css-loader/index.js?{\"sourceMap\":false,\"importLoaders\":1}!../../../../postcss-loader/index.js?{\"ident\":\"postcss\"}!../../../material/prebuilt-themes/indigo-pink.css"), "");
 
 // module
-exports.push([module.i, "\n", ""]);
+exports.push([module.i, "button.br-corner {\n  position: fixed;\n  right: 30px;\n  bottom: 30px;\n}\n", ""]);
 
 // exports
 
