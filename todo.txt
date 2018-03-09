@@ -1,4 +1,0 @@
-- Gatling performance/integration testing
-
-- Dockerize app (read first)
-- Update README.md last time
