@@ -30,4 +30,4 @@ For the frontend do the following:
     npm install
     ng serve
 
-And go to [localhost:4200](localhost:4200).
+And go to: [localhost:4200/](http://localhost:4200).
