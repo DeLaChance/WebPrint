@@ -1,5 +1,4 @@
-- Material.IO usage (job activity)
-- Gatling performance/integration testing (stuff from work)
+- Gatling performance/integration testing
 
-- Update README.md
 - Dockerize app (read first)
+- Update README.md last time
