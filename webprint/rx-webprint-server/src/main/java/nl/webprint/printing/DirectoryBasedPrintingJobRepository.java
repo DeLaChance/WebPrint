@@ -26,6 +26,8 @@ import nl.webprint.adapter.http.FileUpload;
  */
 public class DirectoryBasedPrintingJobRepository implements PrintingJobRepository {
 
+	// TODO: add HashMap-cache for faster retrieval of data
+	
 	public static final String PRINTING_JOB_DIR = "/var/printing-queue/";
 	private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryBasedPrintingJobRepository.class);
 	

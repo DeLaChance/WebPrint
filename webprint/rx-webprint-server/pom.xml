@@ -18,6 +18,8 @@
     <gatling-plugin.version>2.2.4</gatling-plugin.version>
     <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
     <scala.version>2.12.4</scala.version>
+    
+    <skipITs>true</skipITs>
   
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -131,13 +133,15 @@
     <dependency>
       <groupId>io.gatling.highcharts</groupId>
       <artifactId>gatling-charts-highcharts</artifactId>
-      <version>X.Y.Z</version>
+      <version>${gatling-plugin.version}</version>
       <scope>test</scope>
     </dependency>
     
   </dependencies>
   
   <build>
+  
+    <finalName>rx-webprint-server</finalName>
   
     <plugins>
     
@@ -189,6 +193,7 @@
           
           <configuration>
             <scalaVersion>${scala.version}</scalaVersion>
+            <skip>${skipITs}</skip>
           </configuration>
         </plugin>
         
@@ -204,8 +209,10 @@
                 <goal>iterator</goal>
               </goals>
               <configuration>
+                <skip>${skipITs}</skip>
+              
                 <items>
-                  <item>nl.webprint.PrintJobsScenario</item>
+                  <item>nl.webprint.BasicSimulation</item>
                 </items>
                 
                 <pluginExecutors>
@@ -222,7 +229,7 @@
                       <name>start-sqr</name>
                       
                       <waitForInterrupt>false</waitForInterrupt>
-                      <waitAfterLuanch>5</waitAfterLuanch>
+                      <waitAfterLaunch>5</waitAfterLaunch>
                       <arguments>
                         <argument>java</argument>
                         <argument>-jar</argument>
@@ -262,7 +269,8 @@
                       <name>start-sqr</name>
                       
                       <waitForInterrupt>false</waitForInterrupt>
-                      <waitAfterLuanch>5</waitAfterLuanch>
+                      <waitAfterLaunch>5</waitAfterLaunch>
+                      
                       <arguments>
                         <argument>java</argument>
                         <argument>-jar</argument>
