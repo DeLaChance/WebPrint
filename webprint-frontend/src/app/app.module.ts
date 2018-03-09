@@ -1,6 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { DataTablesModule } from 'angular-datatables';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
 import { FileDropModule } from 'ngx-file-drop';
@@ -69,7 +68,6 @@ const stompConfig: StompConfig = {
   ],
   imports: [
     BrowserModule,
-    DataTablesModule,
     HttpClientModule,
     FileDropModule,
     BrowserAnimationsModule,
