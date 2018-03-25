@@ -1,6 +1,6 @@
 {
 	"server": {
 		"port": 8181,
-		"hostname": "localhost"
+		"hostname": "0.0.0.0"
 	}
 }

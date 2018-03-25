@@ -1,8 +1,8 @@
 FROM ${docker.baseimage}
 
+# Set the environment variables
 ENV VERTICLE_FILE ${build.finalName}.jar
-
-# Set the location of the verticles
+ENV VERTICLE_NAME nl.webprint.Standalone
 ENV VERTICLE_HOME /usr/verticles
 
 EXPOSE 8181
@@ -13,4 +13,4 @@ COPY maven/${VERTICLE_FILE} $VERTICLE_HOME/
 # Launch the verticle
 WORKDIR $VERTICLE_HOME
 ENTRYPOINT ["sh", "-c"]
-CMD ["exec java -jar $VERTICLE_FILE"]
+CMD ["exec vertx run $VERTICLE_NAME -cp $VERTICLE_HOME/*"]

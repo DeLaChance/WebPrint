@@ -26,7 +26,7 @@
     <build.finalname>rx-webprint-server</build.finalname>
     
     <docker.image.name>lucien:rx-webprint-server</docker.image.name>
-    <docker.baseimage>openjdk:8-jre-alpine</docker.baseimage>
+    <docker.baseimage>vertx/vertx3</docker.baseimage>
 
   </properties>
   
