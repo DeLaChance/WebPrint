@@ -1,5 +1,5 @@
 ### General ###
-Webprint is a web application. It is a hobby project of mine. The idea is that you should be able to run the app with a single command on any Linux-environment. The app hosts a website which can be used to upload files to the backend. A printer connected to the device via USB consumes these uploaded files and prints these at a user's request.
+Webprint is a web application. It is a hobby project of mine. The basic idea is that you should be able to run the app with a single command on any Linux-environment. The app hosts a website which can be used to upload files to the backend. A printer connected to the device via USB consumes these uploaded files and prints these at a user's request.
 
 ### Technology stack
 Backend:

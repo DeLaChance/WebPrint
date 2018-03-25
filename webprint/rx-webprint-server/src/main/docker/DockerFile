@@ -1,0 +1,16 @@
+FROM ${docker.baseimage}
+
+ENV VERTICLE_FILE ${build.finalName}.jar
+
+# Set the location of the verticles
+ENV VERTICLE_HOME /usr/verticles
+
+EXPOSE 8181
+
+# Copy your fat jar to the container
+COPY maven/${VERTICLE_FILE} $VERTICLE_HOME/
+
+# Launch the verticle
+WORKDIR $VERTICLE_HOME
+ENTRYPOINT ["sh", "-c"]
+CMD ["exec java -jar $VERTICLE_FILE"]
