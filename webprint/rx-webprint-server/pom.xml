@@ -20,6 +20,7 @@
     <scala.version>2.12.4</scala.version>
     
     <skipITs>true</skipITs>
+    <skipDocker>true</skipDocker>
   
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     
@@ -196,6 +197,7 @@
         <groupId>io.fabric8</groupId>
         <artifactId>docker-maven-plugin</artifactId>
         <configuration>
+          <skip>${skipDocker}</skip>
           <images>
             <image>
               <name>${docker.image.name}</name>
@@ -330,5 +332,28 @@
         
     </plugins> 
   </build>
+  
+  <profiles>
+    <profile>
+      <id>pt</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <skipITs>false</skipITs>
+      </properties>
+    </profile>
+    
+    <profile>
+      <id>docker</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <skipDocker>false</skipDocker>
+      </properties>
+    </profile>
+  
+  </profiles>
   
 </project>

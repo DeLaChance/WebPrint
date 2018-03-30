@@ -11,7 +11,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 
 /**
-  * A simulation to do CRUD-operations on the REST endpoint.
+  * A Gatling simulation to measure the performance and correctness of CRUD-operations on the REST-endpoint.
   *
   **/
 class BasicSimulation extends Simulation {
@@ -35,7 +35,6 @@ class BasicSimulation extends Simulation {
         // Part 3: start printing job
         // Part 4: complete printing job
         // Part 5: delete printing job
-
 
     setUp(
         scn.inject(atOnceUsers(SimulationConfig.MAX_USERS))
