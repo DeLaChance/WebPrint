@@ -1,4 +1,4 @@
-package nl.webprint
+package nl.webprint;
 
 /**
   * Global configuration for all simulations.
@@ -17,7 +17,7 @@ object Config {
     val POST_JOB = BASE_URL + "/api/job/";
     val DELETE_JOB_BY_ID = BASE_URL + "/api/job/";
 
-	val START_JOB_BY_ID = BASE_URL + "/api/job/:jobId/start";
-	val COMPLETE_JOB_BY_ID = BASE_URL + "/api/job/:jobId/complete";
+    val START_JOB_BY_ID = BASE_URL + "/api/job/:jobId/start";
+    val COMPLETE_JOB_BY_ID = BASE_URL + "/api/job/:jobId/complete";
 
 }

@@ -13,17 +13,18 @@
   
   <properties>
     <java.version>1.8</java.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   
-    <gatling.version>2.3.0</gatling.version>
+    <gatling.version>2.3.1</gatling.version>
     <gatling-plugin.version>2.2.4</gatling-plugin.version>
-    <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
-    <scala.version>2.12.4</scala.version>
+    <scala-maven-plugin.version>3.3.2</scala-maven-plugin.version>
+    <scala.version>2.12.3</scala.version>
     
     <skipITs>true</skipITs>
     <skipDocker>true</skipDocker>
   
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    
     <build.finalname>rx-webprint-server</build.finalname>
     
     <docker.image.name>lucien:rx-webprint-server</docker.image.name>
@@ -140,7 +141,7 @@
     <dependency>
       <groupId>io.gatling.highcharts</groupId>
       <artifactId>gatling-charts-highcharts</artifactId>
-      <version>${gatling-plugin.version}</version>
+      <version>${gatling.version}</version>
       <scope>test</scope>
     </dependency>
     
@@ -233,11 +234,7 @@
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
         <version>${scala-maven-plugin.version}</version>
-        
-        <configuration>
-          <scalaVersion>${scala.version}</scalaVersion>
-          <skip>${skipITs}</skip>
-        </configuration>
+       
       </plugin>
       
       <plugin>
@@ -255,7 +252,7 @@
               <skip>${skipITs}</skip>
             
               <items>
-                <item>nl.webprint.BasicSimulation</item>
+                <item>nl.webprint.BasicCRUDSimulation</item>
               </items>
               
               <pluginExecutors>
@@ -269,14 +266,14 @@
                   
                   <goal>start</goal>
                   <configuration>
-                    <name>start-sqr</name>
+                    <name>start-webprint</name>
                     
                     <waitForInterrupt>false</waitForInterrupt>
                     <waitAfterLaunch>5</waitAfterLaunch>
                     <arguments>
                       <argument>java</argument>
                       <argument>-jar</argument>
-                      <argument>-${project.basedir}/target/rx-webprint-server.jar</argument>
+                      <argument>${project.basedir}/target/rx-webprint-server.jar</argument>
                       <argument>--vertx-id=webprint</argument>
                       <argument>run</argument>
                       <argument>nl.webprint.Standalone</argument>
@@ -286,18 +283,22 @@
                 </pluginExecutor>
                 
                 <pluginExecutor>
+
                   <plugin>
                     <groupId>io.gatling</groupId>
                     <artifactId>gatling-maven-plugin</artifactId>
                     <version>${gatling-plugin.version}</version>
                   </plugin>
+
                   <goal>integration-test</goal>
+
                   <configuration>
                     <simulationClass>@item@</simulationClass>
                     <simulationsFolder>${project.basedir}/src/test/integration-test/scala</simulationsFolder>
                     <configFolder>${project.basedir}/src/test/integration-test/resources</configFolder>
                     <failOnError>true</failOnError>
                   </configuration>
+
                 </pluginExecutor>
                 
                 <pluginExecutor>
@@ -307,9 +308,9 @@
                     <version>0.7</version>
                   </plugin>
                   
-                  <goal>start</goal>
+                  <goal>stop</goal>
                   <configuration>
-                    <name>start-sqr</name>
+                    <name>stop-webprint</name>
                     
                     <waitForInterrupt>false</waitForInterrupt>
                     <waitAfterLaunch>5</waitAfterLaunch>
@@ -317,7 +318,7 @@
                     <arguments>
                       <argument>java</argument>
                       <argument>-jar</argument>
-                      <argument>-${project.basedir}/target/rx-webprint-server.jar</argument>
+                      <argument>${project.basedir}/target/rx-webprint-server.jar</argument>
                       <argument>stop</argument>
                       <argument>webprint</argument>
                     </arguments>
