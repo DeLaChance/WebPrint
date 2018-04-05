@@ -19,9 +19,6 @@
   </properties>
   
   <modules>
-    <module>database-connector</module>
-    <module>messaging-api</module>
-    <module>http-server</module>
     <module>rx-webprint-server</module>
   </modules>  
 
@@ -48,17 +45,5 @@
       </dependency>
     
   </dependencies>
-  
-  <build>
-    <plugins>
-    
-      <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.7.0</version>
-      </plugin>      
-      
-    </plugins>
-  </build>
-  
+
 </project>
