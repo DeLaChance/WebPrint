@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>nl.webprint</groupId>
+    <artifactId>integration-test</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <name>integration-test</name>
+    <description>rx-webprint-server integration and performance tests</description>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <vertx.version>3.5.0</vertx.version>
+        
+        <skip.performance.tests>false</skip.performance.tests>
+        <fail.on.error.performance.tests>false</fail.on.error.performance.tests>
+
+        <gatling.version>2.3.1</gatling.version>
+        <gatling-plugin.version>2.2.4</gatling-plugin.version>
+        <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
+        <scala.version>2.12.4</scala.version>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <projectFamilyKey>buildcalibrate</projectFamilyKey>
+    </properties>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+
+            <!-- Get rx-webprint-server -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+  
+                                <artifactItem>
+                                    <groupId>nl.webprint</groupId>
+                                    <artifactId>rx-webprint-server</artifactId>
+                                    <version>1.0.0-SNAPSHOT</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <destFileName>rx-webprint-server.jar</destFileName>
+                                </artifactItem>
+  
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Scala -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>${scala-maven-plugin.version}</version>
+
+                <configuration>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.soebes.maven.plugins</groupId>
+                <artifactId>iterator-maven-plugin</artifactId>
+                <version>0.5.0</version>
+
+                <configuration>
+                    <skip>${skip.performance.tests}</skip>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>iterator</goal>
+                        </goals>
+                        <configuration>
+                            <items>
+                                <item>nl.webprint.BasicSimulation</item>
+                            </items>
+                            <pluginExecutors>
+
+                                <pluginExecutor>
+                                    <plugin>
+                                        <groupId>com.bazaarvoice.maven.plugins</groupId>
+                                        <artifactId>process-exec-maven-plugin</artifactId>
+                                        <version>0.7</version>
+                                    </plugin>
+
+                                    <goal>start</goal>
+                                    <configuration>
+                                        <name>start-webprint</name>
+
+                                        <waitForInterrupt>false</waitForInterrupt>
+                                        <waitAfterLaunch>5</waitAfterLaunch>
+                                        <arguments>
+                                            <argument>java</argument>
+                                            <argument>-jar</argument>
+                                            <argument>${project.basedir}/target/rx-webprint-server.jar</argument>
+                                            <argument>start</argument>
+                                            <argument>--vertx-id=webprint</argument>
+                                        </arguments>
+                                    </configuration>
+
+                                </pluginExecutor>
+
+                                <pluginExecutor>
+                                    <!-- Gatling -->
+                                    <plugin>
+                                        <groupId>io.gatling</groupId>
+                                        <artifactId>gatling-maven-plugin</artifactId>
+                                        <version>${gatling-plugin.version}</version>
+                                    </plugin>
+                                    <goal>integration-test</goal>
+                                    <configuration>
+                                        <simulationClass>@item@</simulationClass>
+                                        <simulationsFolder>${project.basedir}/src/test/integration-test/scala</simulationsFolder>
+                                        <configFolder>${project.basedir}/src/test/integration-test/resources</configFolder>
+                                        <failOnError>${fail.on.error.performance.tests}</failOnError>
+                                    </configuration>
+
+                                </pluginExecutor>
+
+                                <pluginExecutor>
+                                    <plugin>
+                                        <groupId>com.bazaarvoice.maven.plugins</groupId>
+                                        <artifactId>process-exec-maven-plugin</artifactId>
+                                        <version>0.7</version>
+                                    </plugin>
+
+                                    <goal>start</goal>
+                                    <configuration>
+                                        <name>stop-webprint</name>
+
+                                        <waitForInterrupt>false</waitForInterrupt>
+                                        <waitAfterLaunch>5</waitAfterLaunch>
+                                        <arguments>
+                                            <argument>java</argument>
+                                            <argument>-jar</argument>
+                                            <argument>${project.basedir}/target/rx-webprint-server.jar</argument>
+                                            <argument>stop</argument>
+                                            <argument>webprint</argument>
+                                        </arguments>
+                                    </configuration>
+
+                                </pluginExecutor>
+
+                            </pluginExecutors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+
+        <!-- Jcabi SSH client -->
+        <dependency>
+            <groupId>com.jcabi</groupId>
+            <artifactId>jcabi-ssh</artifactId>
+            <version>1.6</version>
+        </dependency>
+
+        <!-- Gatling -->
+        <dependency>
+            <groupId>io.gatling.highcharts</groupId>
+            <artifactId>gatling-charts-highcharts</artifactId>
+            <version>${gatling.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <profiles>
+
+        <profile>
+            <id>compile-code</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <properties>
+                <skip.performance.tests>true</skip.performance.tests>
+                <fail.on.error.performance.tests>false</fail.on.error.performance.tests>
+            </properties>
+        </profile>
+
+
+    </profiles>
+
+</project>

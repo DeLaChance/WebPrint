@@ -4,7 +4,7 @@
 
   <groupId>nl.webprint</groupId>
   <artifactId>webprint</artifactId>
-  <version>NEXT-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>webprint</name>
