@@ -31,3 +31,9 @@ For the frontend do the following:
     ng serve
 
 And go to: [localhost:4200/](http://localhost:4200).
+
+To build and start the Docker container do the following in the **rx-webprint-server** directory:
+
+    mvn docker:build docker:start -Pdocker
+
+And then go to: [localhost:8181/static](localhost:8181/static)
