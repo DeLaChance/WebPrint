@@ -13,9 +13,9 @@ object Config {
     val BASE_URL = "http://127.0.0.1:" + PORT_NUMBER;
 
     val GET_JOBS = BASE_URL + "/api/job/";
-    val GET_JOB_BY_ID = BASE_URL + "/api/job/:jobId";
+    val FIND_JOB_BY_ID = BASE_URL + "/api/job/:jobId";
     val POST_JOB = BASE_URL + "/api/job/";
-    val DELETE_JOB_BY_ID = BASE_URL + "/api/job/";
+    val DELETE_JOB_BY_ID = BASE_URL + "/api/job/:jobId";
 
     val START_JOB_BY_ID = BASE_URL + "/api/job/:jobId/start";
     val COMPLETE_JOB_BY_ID = BASE_URL + "/api/job/:jobId/complete";

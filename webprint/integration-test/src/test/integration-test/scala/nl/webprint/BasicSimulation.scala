@@ -18,17 +18,19 @@ class BasicSimulation extends Simulation {
         .userAgentHeader("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:16.0) Gecko/20100101 Firefox/16.0")
         .disableWarmUp
 
-        
+
     // A scenario is a chain of requests and pauses
     val scn = scenario("Basic simulation scenario")
         // Necessary to prevent Akka-exception and wait till application is up
         .pause(SimulationConfig.INITIAL_WAIT_IN_SECONDS seconds)
         // Part 1: add new printing jobs
-        .exec(new AddPrintingJob("/home/lucien/tmp/dummyfile.txt").addPrintingJob)
+        .exec(new AddPrintingJob("dummyfile.txt").addPrintingJob)
         // Part 2: find printing job by id that was returned
+        .exec(FindPrintingJobById.findPrintingJobById)
         // Part 3: start printing job
-        // Part 4: complete printing job
-        // Part 5: delete printing job
+        .exec(StartPrintingJob.startPrintingJob)
+        // Part 4: delete printing job
+        .exec(DeletePrintingJob.deletePrintingJob)
         ;
 
     setUp(
@@ -46,13 +48,12 @@ class BasicSimulation extends Simulation {
     after {
     	// Move data back from archive
     }
-		
+
 }
 
 object SimulationConfig {
-    val MAX_USERS = 1; //100;
+    val MAX_USERS = 100;
     val INITIAL_WAIT_IN_SECONDS = 1;
     val INTERMEDIATE_WAIT_TIME_IN_MILLIS = 600;
     val MAX_SIMULATION_TIME_IN_SECONDS = 60; // 1 minute at most
 }
-
