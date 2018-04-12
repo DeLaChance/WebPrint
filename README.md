@@ -36,4 +36,4 @@ To build and start the Docker container do the following in the **rx-webprint-se
 
     mvn docker:build docker:start -Pdocker
 
-And then go to: [localhost:8181/static](localhost:8181/static)
+And then go to: [localhost:8181/static/](http://localhost:8181/static)
