@@ -24,6 +24,14 @@ task Task8 {
 	}
 }
 
+task copyFiles (type: Copy) {
+	exclude {
+		it.file.name.endsWith('json')
+	}
+	from 'src/main/resources'
+	into 'target'
+}
+
 task Task7 {
 	dependsOn Task5
 	mustRunAfter Task6
