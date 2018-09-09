@@ -1,6 +1,12 @@
 project.ext.projectVersion = "2.0.0"
 def propertyA = "propertyA"
 
+task Task5 {
+	doFirst {
+		println "This is task 5"
+	}
+}
+
 task Task6 {
 	description "This is task 6"
 	doFirst {
@@ -12,9 +18,8 @@ task Task6 {
 }
 
 task Task7 {
-	dependsOn Task6
+	dependsOn Task5, Task6
 	doFirst {
 		println "This is task 7 and propertyA ${propertyA}"
-
 	}
 }
