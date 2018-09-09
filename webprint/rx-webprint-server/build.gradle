@@ -1,67 +1,20 @@
-apply plugin: 'java'
-apply plugin: 'com.github.johnrengelman.shadow'
+project.ext.projectVersion = "2.0.0"
+def propertyA = "propertyA"
 
-group = 'nl.webprint'
-version = '1.0.0-SNAPSHOT'
-description = """rx-webprint-server"""
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-def mainVerticleName = 'nl.webprint.Standalone'
-def vertxVersion =  '3.5.0'
-
-tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
+task Task6 {
+	description "This is task 6"
+	doFirst {
+		println "This was task 6"
+	}
+	doLast {
+		println "This was task 6"
+	}
 }
 
-repositories {
-		maven { url "http://repo.maven.apache.org/maven2" }
-}
+task Task7 {
+	dependsOn Task6
+	doFirst {
+		println "This is task 7 and propertyA ${propertyA}"
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
-    }
-}
-
-dependencies {
-    compile group: 'io.vertx', name: 'vertx-core', version: "$vertxVersion"
-    compile group: 'io.vertx', name: 'vertx-hazelcast', version: "$vertxVersion"
-    compile group: 'io.vertx', name: 'vertx-web', version: "$vertxVersion"
-    compile group: 'io.vertx', name: 'vertx-rx-java2', version: "$vertxVersion"
-    compile group: 'io.vertx', name: 'vertx-config', version: "$vertxVersion"
-    compile group: 'io.vertx', name: 'vertx-service-proxy', version: "$vertxVersion"
-    compile group: 'io.vertx', name: 'vertx-service-proxy', version: "$vertxVersion", classifier:'processor'
-    compile group: 'io.vertx', name: 'vertx-stomp', version:'3.5.1'
-    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
-    testCompile group: 'junit', name: 'junit', version:'3.8.1'
-    compileOnly(group: 'io.vertx', name: 'vertx-codegen', version: "$vertxVersion") {
-        exclude(module: 'jackson-core')
-        exclude(module: 'jackson-databind')
-        exclude(module: 'jackson-annotations')
-    }
-    compileOnly group: 'org.projectlombok', name: 'lombok', version:'1.16.20'
-}
-
-compileJava {
-    options.compilerArgs = [
-        "-proc:only",
-        "-processor", "io.vertx.codegen.CodeGenProcessor"
-    ]
-}
-
-
-shadowJar {
-    classifier = 'fat'
-    manifest {
-        attributes "Main-Verticle": mainVerticleName
-    }
-    mergeServiceFiles {
-        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
-    }
+	}
 }
