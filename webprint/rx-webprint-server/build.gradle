@@ -1,42 +1,47 @@
-project.ext.projectVersion = "2.0.0"
-def propertyA = "propertyA"
+apply plugin: 'java'
 
-task Task5 {
-	doFirst {
-		println "This is task 5"
+group = 'nl.webprint'
+version = '1.0.0-SNAPSHOT'
+description = """rx-webprint-server"""
+
+def mainVerticleName = 'nl.webprint.Standalone'
+def vertxVersion =  '3.5.0'
+
+sourceSets {
+	main {
+		java {
+			srcDir 'src/main/java'
+		}
+
+		resources {
+			srcDir 'src/main/resources'
+		}
 	}
+
 }
 
-task Task6 {
-	description "This is task 6"
-	mustRunAfter Task5
-	doFirst {
-		println "This was task 6"
-	}
-	doLast {
-		println "This was task 6"
-	}
+repositories {
+		mavenCentral()
 }
 
-task Task8 {
-	doLast {
-		println "Task 8"
-	}
-}
+dependencies {
+    compile group: 'io.vertx', name: 'vertx-core', version: "$vertxVersion"
+    compile group: 'io.vertx', name: 'vertx-hazelcast', version: "$vertxVersion"
+    compile group: 'io.vertx', name: 'vertx-web', version: "$vertxVersion"
+    compile group: 'io.vertx', name: 'vertx-rx-java2', version: "$vertxVersion"
+    compile group: 'io.vertx', name: 'vertx-config', version: "$vertxVersion"
+    compile group: 'io.vertx', name: 'vertx-service-proxy', version: "$vertxVersion"
+    compile group: 'io.vertx', name: 'vertx-service-proxy', version: "$vertxVersion", classifier:'processor'
+    compile group: 'io.vertx', name: 'vertx-stomp', version:'3.5.1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
 
-task copyFiles (type: Copy) {
-	exclude {
-		it.file.name.endsWith('json')
-	}
-	from 'src/main/resources'
-	into 'target'
-}
+    testCompile group: 'junit', name: 'junit', version:'3.8.1'
 
-task Task7 {
-	dependsOn Task5
-	mustRunAfter Task6
-	finalizedBy Task8
-	doFirst {
-		println "This is task 7 and propertyA ${propertyA}"
-	}
+    compileOnly(group: 'io.vertx', name: 'vertx-codegen', version: "$vertxVersion") {
+        exclude(module: 'jackson-core')
+        exclude(module: 'jackson-databind')
+        exclude(module: 'jackson-annotations')
+    }
+    compileOnly group: 'org.projectlombok', name: 'lombok', version:'1.16.20'
 }
