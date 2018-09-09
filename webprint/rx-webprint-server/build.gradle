@@ -1,8 +1,14 @@
-apply plugin: 'java'
+plugins {
+	id 'java'
+  id 'io.vertx.vertx-plugin' version '0.1.0'
+}
 
 group = 'nl.webprint'
 version = '1.0.0-SNAPSHOT'
 description = """rx-webprint-server"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 def mainVerticleName = 'nl.webprint.Standalone'
 def vertxVersion =  '3.5.0'
@@ -22,6 +28,7 @@ sourceSets {
 
 repositories {
 		mavenCentral()
+		jcenter()
 }
 
 dependencies {
@@ -44,4 +51,9 @@ dependencies {
         exclude(module: 'jackson-annotations')
     }
     compileOnly group: 'org.projectlombok', name: 'lombok', version:'1.16.20'
+}
+
+vertx {
+  mainVerticle = "$mainVerticleName"
+  vertxVersion = "$vertxVersion"
 }
