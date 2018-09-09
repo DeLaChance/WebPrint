@@ -18,9 +18,16 @@ task Task6 {
 	}
 }
 
+task Task8 {
+	doLast {
+		println "Task 8"
+	}
+}
+
 task Task7 {
 	dependsOn Task5
 	mustRunAfter Task6
+	finalizedBy Task8
 	doFirst {
 		println "This is task 7 and propertyA ${propertyA}"
 	}
